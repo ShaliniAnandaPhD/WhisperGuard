@@ -200,6 +200,23 @@ body.mode-clear .phone{box-shadow:0 0 0 2px #2a2f3a inset,0 30px 60px -30px rgba
 .badge.rec::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:currentColor;margin-right:6px;vertical-align:1px;animation:breathe 1.2s infinite}
 
 .empty-msg{color:var(--muted);margin:0;font-size:15px}
+.dispatch{background:var(--redSoft);border:1px solid var(--red);border-radius:14px;padding:14px 16px;margin-top:10px}
+.dispatch .d-head{display:flex;align-items:center;gap:10px;font-weight:700;color:var(--red);font-size:15px;margin-bottom:6px}
+.dispatch .d-head svg{width:20px;height:20px;fill:var(--red);flex:none}
+.dispatch .d-body{font-size:14px;color:var(--ink);line-height:1.5}
+.dispatch .d-body b{display:inline}
+.dispatch .d-meta{font-size:13px;color:var(--muted);margin-top:6px;display:flex;flex-wrap:wrap;gap:6px 16px}
+.dispatch.sent{border-style:solid;animation:dispatchIn .4s ease}
+.dispatch.pending{border-style:dashed;opacity:.7}
+@keyframes dispatchIn{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
+
+.waveform{display:flex;align-items:center;gap:2px;height:40px;padding:10px 14px;background:var(--panel2);border-radius:12px;margin:8px 0}
+.waveform i{width:3px;border-radius:3px;background:var(--red);transition:height .15s;height:4px}
+.waveform.active i{animation:wave .6s ease-in-out infinite alternate}
+.waveform i:nth-child(2n){animation-delay:.1s}.waveform i:nth-child(3n){animation-delay:.2s}
+.waveform i:nth-child(5n){animation-delay:.05s}.waveform i:nth-child(7n){animation-delay:.15s}
+@keyframes wave{0%{height:4px}100%{height:28px}}
+.rec-meta{font-size:13px;color:var(--muted);display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px;margin-top:6px}
 .countdown .bar{height:10px;border-radius:10px;background:var(--panel2);overflow:hidden;margin:4px 0 10px}
 .countdown .bar i{display:block;height:100%;background:var(--amber);border-radius:10px;width:100%}
 .cd-row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;font-size:14px;color:var(--muted);margin-bottom:12px}
@@ -391,6 +408,20 @@ details.settings[open] summary::after{content:"\2212"}
         </div>
       </div>
 
+      <div class="sec">
+        <h3>Emergency dispatch <span class="badge" id="dispatchBadge">Off</span></h3>
+        <p class="lede">Alerts local emergency services with your GPS coordinates. Triggered automatically on full alert after the cancel window.</p>
+        <div id="dispatchBody"><p class="empty-msg">Turn on in Settings. When active, a full alert will dispatch a request to emergency services with your live location.</p></div>
+        <p class="fineprint">Simulated. No real emergency call is placed. In a production version this would use platform emergency APIs.</p>
+      </div>
+
+      <div class="sec">
+        <h3>Ambient recording <span class="badge" id="recBadge">Ready</span></h3>
+        <p class="lede">Silently captures surrounding audio as evidence. Starts automatically when a code phrase is heard.</p>
+        <div id="recBody"><p class="empty-msg">Activates on any code phrase. Audio is encrypted and stored locally until you choose to share it.</p></div>
+        <p class="fineprint">Simulated. No actual audio is captured in this demo. In production this would use the device microphone in the background.</p>
+      </div>
+
       <div class="split">
         <div class="sec">
           <h3>Incident note <span class="badge" id="noteBadge">Ready</span></h3>
@@ -418,6 +449,7 @@ details.settings[open] summary::after{content:"\2212"}
             <label class="toggle"><input type="checkbox" id="sNote"> Keep an incident note</label>
             <label class="toggle"><input type="checkbox" id="sMsg"> Send emergency message on full alert</label>
             <label class="toggle"><input type="checkbox" id="sCallAlert"> Fake call on full alert too</label>
+            <label class="toggle"><input type="checkbox" id="sDispatch"> Alert emergency services on full alert</label>
             <label class="toggle"><input type="checkbox" id="sVoice"> Ringtone and caller voice audio</label>
           </div>
         </details>
@@ -443,7 +475,7 @@ const DEFAULTS = {
   escape:'did I leave the oven on', alert:'remind me to buy blueberries', clear:'I found my keys',
   contacts:'Priya (sister), Jordan (roommate)',
   callDelay:6, cancelWindow:15,
-  noteOn:true, msgOn:true, callOnAlert:true, voiceOn:true
+  noteOn:true, msgOn:true, callOnAlert:true, dispatchOn:true, voiceOn:true
 };
 let cfg = Object.assign({}, DEFAULTS, store.get('wg_cfg') || {});
 const saveCfg = () => store.set('wg_cfg', cfg);
@@ -478,7 +510,8 @@ let S;
 function freshState(){
   return { mode:'idle', call:'none', callTimer:null, callTimers:[], callClock:null, callStart:0,
     recording:false, note:[], noteId:'', msg:'none', left:0, msgIv:null, locIv:null, sent:[],
-    steps:{hear:'idle', match:'idle', disguise:'idle', call:'idle', note:'idle', msg:'idle'} };
+    dispatch:'none', ambientRec:false,
+    steps:{hear:'idle', match:'idle', disguise:'idle', call:'idle', note:'idle', msg:'idle', dispatch:'idle'} };
 }
 
 /* matcher */
@@ -590,12 +623,14 @@ function activate(kind){
   if(kind === 'escape' || cfg.callOnAlert) scheduleCall();
   else if(S.steps.call === 'idle') step('call','skipped');
   startNote(kind);
+  startRecording();
   if(kind === 'alert') startMessage();
-  else if(S.steps.msg === 'idle') step('msg','skipped');
+  else if(S.steps.msg === 'idle'){ step('msg','skipped'); step('dispatch','skipped'); }
 }
 
 function resetIncident(){
-  S.note = []; S.recording = false; S.sent = []; S.msg = 'none';
+  S.note = []; S.recording = false; S.sent = []; S.msg = 'none'; S.dispatch = 'none'; S.ambientRec = false;
+  stopEvery(recIv); recIv = null;
   Object.keys(S.steps).forEach(k => S.steps[k] = 'idle');
   renderAll();
 }
@@ -758,6 +793,8 @@ function sendMessage(){
   log(`Emergency message delivered to ${to.length} contact${to.length === 1 ? '' : 's'} (simulated)`, 'alert');
   noteAdd(`Emergency message sent to ${to.join(', ') || 'no contacts'}`);
   step('msg','done'); renderMsg();
+  startDispatch();
+  later(sendDispatch, 3000);
   S.locIv = every(() => {
     drift(); updateMap();
     S.sent.push({kind:'loc', text:`Location update: ${locStr()} at ${shortTime()}`, time:shortTime(), to});
@@ -772,7 +809,82 @@ function cancelMessage(reason){
   log(`Emergency message cancelled by ${reason}`, 'ok');
   noteAdd(`Emergency message cancelled by ${reason}`);
   renderMsg();
+  if(S.dispatch === 'pending'){ S.dispatch = 'cancelled'; step('dispatch','cancelled'); log('Emergency dispatch cancelled', 'ok'); noteAdd('Emergency dispatch cancelled'); renderDispatch(); }
 }
+
+/* emergency dispatch to authorities */
+function dispatchText(){ return `Automated safety alert via WhisperGuard. Individual: ${cfg.userName}. GPS: ${locStr()}. Time: ${shortTime()}. Requesting welfare check. Incident ref: ${S.noteId || 'N/A'}.`; }
+function startDispatch(){
+  if(!cfg.dispatchOn){ step('dispatch','skipped'); renderDispatch(); return; }
+  if(S.dispatch !== 'none') return;
+  S.dispatch = 'pending';
+  step('dispatch','active');
+  log('Emergency dispatch to authorities queued', 'warn');
+  noteAdd('Emergency dispatch to 911 queued, will send after cancel window');
+  renderDispatch();
+}
+function sendDispatch(){
+  if(S.dispatch !== 'pending') return;
+  S.dispatch = 'sent';
+  step('dispatch','done');
+  log('Emergency dispatch sent to 911 with GPS coordinates (simulated)', 'alert');
+  noteAdd(`911 dispatch sent: ${locStr()}`);
+  renderDispatch();
+}
+function cancelDispatch(){
+  if(S.dispatch !== 'pending') return;
+  S.dispatch = 'cancelled';
+  step('dispatch','cancelled');
+  log('Emergency dispatch cancelled', 'ok');
+  noteAdd('Emergency dispatch to 911 cancelled');
+  renderDispatch();
+}
+function renderDispatch(){
+  const b = $('#dispatchBadge'), body = $('#dispatchBody');
+  if(!cfg.dispatchOn){ b.className = 'badge'; b.textContent = 'Off'; body.innerHTML = '<p class="empty-msg">Turn on in Settings. When active, a full alert will dispatch a request to emergency services with your live location.</p>'; }
+  else if(S.dispatch === 'none'){ b.className = 'badge'; b.textContent = 'Ready'; body.innerHTML = '<p class="empty-msg">Activated on full alert. Sends your GPS coordinates to local emergency services after the cancel window.</p>'; }
+  else if(S.dispatch === 'pending'){ b.className = 'badge warn'; b.textContent = 'Pending'; body.innerHTML = `<div class="dispatch pending"><div class="d-head"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>Dispatch queued</div><div class="d-body">Waiting for cancel window to close before contacting emergency services.</div></div>`; }
+  else if(S.dispatch === 'sent'){ b.className = 'badge alert'; b.textContent = 'Dispatched'; body.innerHTML = `<div class="dispatch sent"><div class="d-head"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>911 Dispatch sent</div><div class="d-body">${esc(dispatchText())}</div><div class="d-meta"><span>Service: 911 (simulated)</span><span>GPS: ${esc(locStr())}</span><span>Time: ${esc(shortTime())}</span><span>Ref: ${esc(S.noteId || 'N/A')}</span></div></div>`; }
+  else if(S.dispatch === 'cancelled'){ b.className = 'badge ok'; b.textContent = 'Cancelled'; body.innerHTML = '<p class="empty-msg">Dispatch was cancelled during the cancel window. No contact was made with emergency services.</p>'; }
+}
+/* ambient recording */
+let recStart = 0, recIv = null;
+function startRecording(){
+  if(S.ambientRec) return;
+  S.ambientRec = true; recStart = Date.now();
+  log('Ambient recording started (simulated)', 'warn');
+  noteAdd('Background audio capture started');
+  recIv = every(() => renderRecording(), 1000);
+  renderRecording();
+}
+function stopRecording(){
+  if(!S.ambientRec) return;
+  S.ambientRec = false;
+  stopEvery(recIv); recIv = null;
+  const dur = Math.floor((Date.now() - recStart) / 1000);
+  log(`Ambient recording stopped, ${dur}s captured (simulated)`, 'ok');
+  noteAdd(`Background audio capture stopped, ${dur}s saved`);
+  renderRecording();
+}
+function renderRecording(){
+  const b = $('#recBadge'), body = $('#recBody');
+  if(S.ambientRec){
+    const dur = Math.floor((Date.now() - recStart) / 1000);
+    const mm = String(Math.floor(dur / 60)).padStart(2, '0');
+    const ss = String(dur % 60).padStart(2, '0');
+    b.className = 'badge alert rec'; b.textContent = 'Recording';
+    const bars = Array.from({length: 32}, () => '<i></i>').join('');
+    body.innerHTML = `<div class="waveform active">${bars}</div><div class="rec-meta"><span>Duration: ${mm}:${ss}</span><span>Encrypted, stored locally</span><span>Size: ~${Math.round(dur * 16)}KB</span></div>`;
+  } else if(recStart > 0){
+    const dur = Math.floor((Date.now() - recStart) / 1000);
+    b.className = 'badge ok'; b.textContent = 'Saved';
+    body.innerHTML = `<p class="empty-msg">Recording saved. ${dur}s of ambient audio captured and encrypted.</p>`;
+  } else {
+    b.className = 'badge'; b.textContent = 'Ready';
+    body.innerHTML = '<p class="empty-msg">Activates on any code phrase. Audio is encrypted and stored locally until you choose to share it.</p>';
+  }
+}
+
 function renderMsg(){
   const b = $('#msgBadge'), body = $('#msgBody'), to = contactsList();
   const toLine = esc(to.join(', ') || 'No contacts set');
@@ -804,8 +916,10 @@ function allClear(){
   stopEvery(S.locIv); S.locIv = null;
   if(S.callTimer){ cancelLater(S.callTimer); S.callTimer = null; log('Pending fake call cancelled'); if(S.steps.call === 'active') step('call','cancelled'); }
   if(S.call === 'ringing') endCall('dismissed');
+  if(S.dispatch === 'pending') cancelDispatch();
   if(S.recording){ noteAdd('All clear phrase recognized, incident note closed'); S.recording = false; step('note','done'); }
-  setMode('clear'); renderMsg(); renderNote();
+  stopRecording();
+  setMode('clear'); renderMsg(); renderNote(); renderDispatch(); renderRecording();
 }
 
 /* status + pipeline */
@@ -852,7 +966,8 @@ const STEPS = [
   ['disguise','Disguise','Ordinary reply on screen'],
   ['call','Fake call','A reason to walk away'],
   ['note','Incident note','Timestamped record'],
-  ['msg','Emergency message','Trusted contacts told']
+  ['msg','Emergency message','Trusted contacts told'],
+  ['dispatch','Alert authorities','GPS sent to emergency services']
 ];
 const ST_LABEL = {idle:'', active:'Running', done:'Done', skipped:'Not used', cancelled:'Cancelled', flash:'Listening'};
 function renderPipeline(){
@@ -988,7 +1103,8 @@ function resetAll(){
   bubble('bot', `Hi ${cfg.userName}. What can I help with?`);
   $('#log').innerHTML = '';
   const h = $('#heard'); h.classList.add('empty'); h.textContent = 'Nothing heard yet';
-  renderPhrases(); renderPipeline(); setMode('idle'); renderNote(); renderMsg();
+  recStart = 0; stopEvery(recIv); recIv = null;
+  renderPhrases(); renderPipeline(); setMode('idle'); renderNote(); renderMsg(); renderDispatch(); renderRecording();
   scene('');
   demoOn = false; const btn = $('#demoBtn'); btn.disabled = false; btn.textContent = 'Play demo';
   log('WhisperGuard ready. Listening for code phrases');
@@ -996,7 +1112,7 @@ function resetAll(){
 $('#resetBtn').addEventListener('click', resetAll);
 
 /* settings */
-const F = {sName:'userName', sCaller:'callerName', sEscape:'escape', sAlert:'alert', sClear:'clear', sContacts:'contacts', sDelay:'callDelay', sWindow:'cancelWindow', sNote:'noteOn', sMsg:'msgOn', sCallAlert:'callOnAlert', sVoice:'voiceOn'};
+const F = {sName:'userName', sCaller:'callerName', sEscape:'escape', sAlert:'alert', sClear:'clear', sContacts:'contacts', sDelay:'callDelay', sWindow:'cancelWindow', sNote:'noteOn', sMsg:'msgOn', sCallAlert:'callOnAlert', sDispatch:'dispatchOn', sVoice:'voiceOn'};
 Object.entries(F).forEach(([id, key]) => {
   const el = document.getElementById(id);
   if(el.type === 'checkbox') el.checked = !!cfg[key]; else el.value = cfg[key];
