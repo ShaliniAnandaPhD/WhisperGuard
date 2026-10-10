@@ -38,7 +38,15 @@
 }
 *,*::before,*::after{box-sizing:inherit}
 html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;overflow-x:hidden}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;overflow-x:hidden;transition:background .8s ease}
+body.mode-escape{--bg:#f7f2e6;--panel:#fffdf6}
+body.mode-alert{--bg:#f9ecea;--panel:#fff8f7}
+body.mode-clear{--bg:#ecf5ef;--panel:#f6fdf8}
+@media(prefers-color-scheme:dark){
+  body.mode-escape:not([data-theme="light"]) .layout{--bg:#1e1b14;--panel:#2a2518}
+  body.mode-alert:not([data-theme="light"]) .layout{--bg:#1e1414;--panel:#2a1c1c}
+  body.mode-clear:not([data-theme="light"]) .layout{--bg:#141e17;--panel:#1c2a20}
+}
 button,input,select{font:inherit;color:inherit}
 :focus-visible{outline:3px solid var(--dusk);outline-offset:2px;border-radius:6px}
 img,svg{max-width:100%}
@@ -57,8 +65,9 @@ h1{font-family:var(--display);font-weight:700;font-size:clamp(28px,4vw,40px);lin
 .btn:disabled{opacity:.6;cursor:default}
 
 .scene{max-width:1240px;margin:12px auto 0;padding:0 24px}
-.scene-inner{border-left:4px solid var(--amber);background:var(--panel);padding:12px 16px;border-radius:0 12px 12px 0;font-size:17px}
+.scene-inner{border-left:4px solid var(--amber);background:var(--panel);padding:14px 18px;border-radius:0 14px 14px 0;font-size:17px;line-height:1.55;animation:sceneIn .4s ease}
 .scene-inner b{color:var(--amber);margin-right:8px}
+@keyframes sceneIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
 
 .layout{max-width:1240px;margin:0 auto;padding:20px 24px 40px;display:grid;grid-template-columns:minmax(300px,380px) minmax(0,1fr);gap:32px;align-items:start}
 .col-head{font-family:var(--display);font-weight:500;font-size:20px;margin:0 0 4px}
@@ -66,7 +75,10 @@ h1{font-family:var(--display);font-weight:700;font-size:clamp(28px,4vw,40px);lin
 
 /* Phone */
 .phone-col{position:sticky;top:calc(16px + env(safe-area-inset-top,0px))}
-.phone{width:100%;max-width:360px;margin:0 auto;aspect-ratio:9/18.4;max-height:740px;border-radius:46px;padding:11px;background:#05070b;box-shadow:0 0 0 2px #2a2f3a inset,0 30px 60px -30px rgba(12,18,40,.55)}
+.phone{width:100%;max-width:360px;margin:0 auto;aspect-ratio:9/18.4;max-height:740px;border-radius:46px;padding:11px;background:#05070b;box-shadow:0 0 0 2px #2a2f3a inset,0 30px 60px -30px rgba(12,18,40,.55),0 0 0 0 transparent;transition:box-shadow 1s ease}
+body.mode-escape .phone{box-shadow:0 0 0 2px #2a2f3a inset,0 30px 60px -30px rgba(12,18,40,.55),0 0 40px -10px rgba(185,120,18,.25)}
+body.mode-alert .phone{box-shadow:0 0 0 2px #2a2f3a inset,0 30px 60px -30px rgba(12,18,40,.55),0 0 50px -10px rgba(193,61,52,.3)}
+body.mode-clear .phone{box-shadow:0 0 0 2px #2a2f3a inset,0 30px 60px -30px rgba(12,18,40,.55),0 0 40px -10px rgba(47,125,92,.25)}
 .screen{position:relative;height:100%;border-radius:36px;overflow:hidden;display:flex;flex-direction:column;background:linear-gradient(180deg,#1b2440 0%,#141a2b 55%,#10141f 100%);color:#eef1f8}
 .statusbar{display:flex;align-items:center;justify-content:space-between;padding:12px 24px 4px;font-size:14px;font-weight:700;position:relative;z-index:3}
 .island{position:absolute;left:50%;top:9px;transform:translateX(-50%);width:96px;height:26px;border-radius:20px;background:#000}
@@ -77,7 +89,8 @@ h1{font-family:var(--display);font-weight:700;font-size:clamp(28px,4vw,40px);lin
 .app-sub{font-size:13px;color:#a9b3cc}
 .chat{flex:1;overflow-y:auto;padding:6px 14px 10px;display:flex;flex-direction:column;gap:8px;scrollbar-width:none}
 .chat::-webkit-scrollbar{display:none}
-.msg{max-width:82%;padding:9px 13px;border-radius:18px;font-size:15px;line-height:1.4;word-wrap:break-word}
+.msg{max-width:82%;padding:9px 13px;border-radius:18px;font-size:15px;line-height:1.4;word-wrap:break-word;animation:msgIn .25s ease}
+@keyframes msgIn{from{opacity:0;transform:translateY(8px) scale(.96)}to{opacity:1;transform:none}}
 .msg.bot{align-self:flex-start;background:#26304a;border-bottom-left-radius:6px}
 .msg.me{align-self:flex-end;background:#6d7ff5;color:#fff;border-bottom-right-radius:6px}
 .msg.typing{display:flex;gap:4px;padding:13px 14px}
@@ -96,7 +109,8 @@ h1{font-family:var(--display);font-weight:700;font-size:clamp(28px,4vw,40px);lin
 .iconbtn.mic.on{background:#e5534b;animation:pulse 1.4s infinite}
 @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(229,83,75,.55)}70%{box-shadow:0 0 0 12px rgba(229,83,75,0)}100%{box-shadow:0 0 0 0 rgba(229,83,75,0)}}
 
-.call{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:70px 24px 46px;background:radial-gradient(120% 70% at 50% 0%,#3d4f7d 0%,#1a2236 55%,#0d111b 100%);color:#fff}
+.call{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:70px 24px 46px;background:radial-gradient(120% 70% at 50% 0%,#3d4f7d 0%,#1a2236 55%,#0d111b 100%);color:#fff;animation:callIn .4s ease;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
+@keyframes callIn{from{opacity:0;transform:translateY(100%)}to{opacity:1;transform:none}}
 .call[hidden]{display:none}
 .call-top{text-align:center}
 .avatar{width:92px;height:92px;border-radius:50%;margin:0 auto 14px;background:#5a6aa8;display:grid;place-items:center;font-family:var(--display);font-size:40px;font-weight:700}
@@ -134,7 +148,9 @@ h1{font-family:var(--display);font-weight:700;font-size:clamp(28px,4vw,40px);lin
 @media (max-width:720px){.split > .sec + .sec{border-left:none;border-top:1px solid var(--rule)}}
 
 .status{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
-.state{font-family:var(--display);font-weight:700;font-size:clamp(26px,3.4vw,34px);line-height:1;padding:12px 18px;border-radius:16px;background:var(--panel2)}
+.state{font-family:var(--display);font-weight:700;font-size:clamp(26px,3.4vw,34px);line-height:1;padding:12px 18px;border-radius:16px;background:var(--panel2);transition:all .4s ease}
+.state.alert{animation:alertPulse 2s ease infinite}
+@keyframes alertPulse{0%,100%{box-shadow:0 0 0 0 transparent}50%{box-shadow:0 0 20px -4px var(--red)}}
 .state.idle{color:var(--dusk);background:var(--duskSoft)}
 .state.escape{color:var(--amber);background:var(--amberSoft)}
 .state.alert{color:var(--red);background:var(--redSoft)}
@@ -195,6 +211,15 @@ h1{font-family:var(--display);font-weight:700;font-size:clamp(28px,4vw,40px);lin
 .sms.loc{border-left:4px solid var(--dusk)}
 .sms.draft{border-left:4px dashed var(--amber)}
 .fineprint{font-size:13px;color:var(--muted);margin:12px 0 0}
+
+.minimap{position:relative;width:100%;aspect-ratio:2.2/1;border-radius:14px;overflow:hidden;background:var(--panel2);margin:14px 0 8px;border:1px solid var(--rule)}
+.minimap svg{width:100%;height:100%}
+.minimap .dot{fill:var(--red);filter:drop-shadow(0 0 6px var(--red))}
+.minimap .dot-ring{fill:none;stroke:var(--red);stroke-width:1.5;opacity:0}
+.minimap.active .dot-ring{animation:sonar 2s ease-out infinite}
+.minimap .trail{fill:none;stroke:var(--dusk);stroke-width:1.5;stroke-dasharray:4 3;opacity:.5}
+.map-label{position:absolute;bottom:8px;left:10px;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;background:var(--panel);padding:2px 8px;border-radius:6px;opacity:.8}
+@keyframes sonar{0%{r:5;opacity:.7}100%{r:22;opacity:0}}
 
 .note-list,.log{list-style:none;margin:0;padding:0;max-height:260px;overflow-y:auto}
 .note-list li,.log li{display:grid;grid-template-columns:auto 1fr;gap:10px;padding:6px 0;border-top:1px solid var(--rule);font-size:14px}
@@ -341,6 +366,27 @@ details.settings[open] summary::after{content:"\2212"}
           <h3>Emergency message <span class="badge" id="msgBadge">Ready</span></h3>
           <p class="lede">Sent to trusted contacts after a short cancel window.</p>
           <div id="msgBody"></div>
+          <div class="minimap" id="minimap">
+            <svg viewBox="0 0 320 145" xmlns="http://www.w3.org/2000/svg">
+              <rect width="320" height="145" fill="var(--panel2)"/>
+              <g stroke="var(--rule)" stroke-width="1" fill="none" opacity=".6">
+                <line x1="40" y1="0" x2="40" y2="145"/><line x1="90" y1="0" x2="90" y2="145"/>
+                <line x1="140" y1="0" x2="140" y2="145"/><line x1="200" y1="0" x2="200" y2="145"/>
+                <line x1="260" y1="0" x2="260" y2="145"/>
+                <line x1="0" y1="30" x2="320" y2="30"/><line x1="0" y1="70" x2="320" y2="70"/>
+                <line x1="0" y1="110" x2="320" y2="110"/>
+              </g>
+              <g stroke="var(--muted)" stroke-width="5" stroke-linecap="round" opacity=".18">
+                <line x1="40" y1="0" x2="40" y2="145"/><line x1="140" y1="0" x2="140" y2="145"/>
+                <line x1="260" y1="0" x2="260" y2="145"/>
+                <line x1="0" y1="70" x2="320" y2="70"/>
+              </g>
+              <path class="trail" id="mapTrail" d=""/>
+              <circle class="dot-ring" id="mapRing" cx="160" cy="72" r="5"/>
+              <circle class="dot" id="mapDot" cx="160" cy="72" r="5"/>
+            </svg>
+            <span class="map-label" id="mapLabel">37.7793° N, 122.4193° W</span>
+          </div>
           <p class="fineprint">Simulated. Location is fictional and no message is sent anywhere.</p>
         </div>
       </div>
@@ -638,6 +684,24 @@ function speak(text){
   if(!cfg.voiceOn || !('speechSynthesis' in window)) return;
   try{ const u = new SpeechSynthesisUtterance(text); u.rate = 1.02; u.pitch = 1.05; speechSynthesis.speak(u); }catch(e){}
 }
+let ambientNode = null, ambientGain = null;
+function ambientStart(){
+  if(!cfg.voiceOn || ambientNode) return;
+  try{
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    if(actx.state === 'suspended') actx.resume();
+    ambientNode = actx.createOscillator(); ambientGain = actx.createGain();
+    ambientNode.type = 'sine'; ambientNode.frequency.value = 55;
+    ambientGain.gain.setValueAtTime(0, actx.currentTime);
+    ambientGain.gain.linearRampToValueAtTime(0.04, actx.currentTime + 2);
+    ambientNode.connect(ambientGain); ambientGain.connect(actx.destination);
+    ambientNode.start();
+  }catch(e){}
+}
+function ambientStop(){
+  if(!ambientNode) return;
+  try{ ambientGain.gain.linearRampToValueAtTime(0, actx.currentTime + 1); later(() => { try{ambientNode.stop();}catch(e){} ambientNode = null; ambientGain = null; }, 1200); }catch(e){ ambientNode = null; ambientGain = null; }
+}
 
 /* incident note */
 function startNote(kind){
@@ -695,7 +759,7 @@ function sendMessage(){
   noteAdd(`Emergency message sent to ${to.join(', ') || 'no contacts'}`);
   step('msg','done'); renderMsg();
   S.locIv = every(() => {
-    drift();
+    drift(); updateMap();
     S.sent.push({kind:'loc', text:`Location update: ${locStr()} at ${shortTime()}`, time:shortTime(), to});
     noteAdd(`Location update ${locStr()}`); log('Location update shared (simulated)');
     renderMsg();
@@ -754,9 +818,27 @@ const MODES = {
 function setMode(m){
   if(S.mode !== m) log(`Mode changed to ${MODES[m].label}`, m === 'alert' ? 'alert' : m === 'escape' ? 'warn' : 'ok');
   S.mode = m;
+  document.body.classList.remove('mode-idle','mode-escape','mode-alert','mode-clear');
+  document.body.classList.add('mode-' + m);
+  if(m === 'escape' || m === 'alert') ambientStart(); else ambientStop();
   const el = $('#state'); el.className = 'state ' + m; el.textContent = MODES[m].label;
   $('#stateTitle').textContent = MODES[m].title; $('#stateDesc').textContent = MODES[m].desc;
+  updateMap();
   renderStatus();
+}
+/* mini-map */
+const mapPts = [];
+function updateMap(){
+  const mm = $('#minimap');
+  if(S.mode === 'alert' || S.mode === 'escape'){ mm.classList.add('active'); } else { mm.classList.remove('active'); }
+  const cx = 80 + mapPts.length * 6 + Math.random() * 4;
+  const cy = 50 + Math.sin(mapPts.length * 0.7) * 18 + Math.random() * 6;
+  mapPts.push({x: Math.min(cx, 300), y: Math.min(Math.max(cy, 15), 135)});
+  const last = mapPts[mapPts.length - 1];
+  $('#mapDot').setAttribute('cx', last.x); $('#mapDot').setAttribute('cy', last.y);
+  $('#mapRing').setAttribute('cx', last.x); $('#mapRing').setAttribute('cy', last.y);
+  if(mapPts.length > 1){ $('#mapTrail').setAttribute('d', 'M' + mapPts.map(p => p.x+','+p.y).join(' L')); }
+  $('#mapLabel').textContent = locStr();
 }
 function renderStatus(){
   const callTxt = S.call === 'ringing' ? 'Ringing' : S.call === 'active' ? 'On the call' : S.callTimer ? 'Ringing soon' : (S.steps && S.steps.call === 'done') ? 'Finished' : 'Not scheduled';
@@ -858,29 +940,29 @@ async function runDemo(){
   demoOn = true; const btn = $('#demoBtn'); btn.disabled = true; btn.textContent = 'Demo playing';
   if(document.body.classList.contains('onlooker')) toggleOnlooker();
   ringStart(); ringStop(); // unlocks audio on this click
-  scene(`${cfg.userName} is walking home from the train and chatting with Nimbus like she always does.`);
-  await wait(1500);
-  await typeAndSend("Hey, what's the weather like tonight?");
+  scene(`9:35 PM — ${cfg.userName} steps off the 7:40 train at Glen Park. She opens Nimbus, her everyday assistant, and starts walking.`);
   await wait(2200);
+  await typeAndSend(“Hey, what's the weather like tonight?”);
+  await wait(2500);
   await typeAndSend('Cool. Play something relaxing for the walk.');
-  await wait(2200);
-  scene('She notices someone has been following her for two blocks. She keeps her voice casual.');
-  await wait(2800);
+  await wait(2500);
+  scene(`She turns onto Chenery St. Footsteps behind her match her pace. She slows down — they slow down. Two blocks now. Her heart rate spikes, but her voice stays casual.`);
+  await wait(3500);
   await typeAndSend(sayFor('alert'));
-  scene('The screen shows an ordinary reply that starts with “Got it”. Behind the scenes a full alert begins and the cancel window opens.');
+  scene(`Watch the phone: just an ordinary reply. But behind the scenes, WhisperGuard has activated a full alert — fake call, incident note, and emergency message — all invisible to anyone watching.`);
   await waitFor(() => S.call === 'ringing', 20000);
-  scene(`${cfg.callerName} is “calling”. Answering gives her a believable reason to stay on the line and walk away.`);
-  await wait(2400);
+  scene(`${cfg.callerName} is “calling.” To anyone nearby this looks completely normal — she's just picking up a call from ${cfg.callerName}. It gives her a reason to stay on the line and change direction.`);
+  await wait(2800);
   accept();
   await waitFor(() => S.msg !== 'queued', 70000);
-  scene(S.msg === 'sent' ? 'The cancel window closed, so her trusted contacts now have her location. The incident note keeps a timestamped record.' : 'The incident note keeps a timestamped record of everything.');
+  scene(S.msg === 'sent' ? `The cancel window passed. Her sister Priya and roommate Jordan just received her live GPS location. They know something is wrong — without ${cfg.userName} ever saying a word about it out loud.` : 'The incident note is recording a timestamped record of everything.');
   await wait(9000);
   endCall();
-  scene('She reaches a busy cafe and feels safe again.');
-  await wait(2200);
+  scene(`She reaches Diamond Street, a busy, well-lit block. The person is gone. She ducks into a coffee shop and takes a breath.`);
+  await wait(2800);
   await typeAndSend(sayFor('clear'));
   await wait(1500);
-  scene('The all clear phrase stands everything down and tells her contacts she is okay. Your turn: try the phrases yourself.');
+  scene(`All clear. Priya and Jordan get an update: she's safe. The incident note closes with a full timeline. Nobody nearby ever saw an alert on her screen. That's WhisperGuard. Try it yourself — type a code phrase below.`);
   demoOn = false; btn.disabled = false; btn.textContent = 'Play demo again';
 }
 $('#demoBtn').addEventListener('click', runDemo);
@@ -895,9 +977,12 @@ $('#onlookerBtn').addEventListener('click', toggleOnlooker);
 /* reset */
 function resetAll(){
   T.forEach(clearTimeout); T.clear(); I.forEach(clearInterval); I.clear();
-  ringStop(); try{ window.speechSynthesis && speechSynthesis.cancel(); }catch(e){}
+  ringStop(); ambientStop(); try{ window.speechSynthesis && speechSynthesis.cancel(); }catch(e){}
   if(listening && rec){ try{ rec.stop(); }catch(e){} }
   S = freshState(); loc = {lat:37.7793, lng:122.4193};
+  mapPts.length = 0;
+  document.body.classList.remove('mode-idle','mode-escape','mode-alert','mode-clear');
+  try{ $('#mapDot').setAttribute('cx',160); $('#mapDot').setAttribute('cy',72); $('#mapRing').setAttribute('cx',160); $('#mapRing').setAttribute('cy',72); $('#mapTrail').setAttribute('d',''); $('#minimap').classList.remove('active'); $('#mapLabel').textContent = '37.7793° N, 122.4193° W'; }catch(e){}
   callEl.hidden = true; callEl.classList.remove('ringing');
   chat.innerHTML = ''; input.value = '';
   bubble('bot', `Hi ${cfg.userName}. What can I help with?`);
