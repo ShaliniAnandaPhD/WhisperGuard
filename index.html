@@ -942,7 +942,7 @@ async function runDemo(){
   ringStart(); ringStop(); // unlocks audio on this click
   scene(`9:35 PM — ${cfg.userName} steps off the 7:40 train at Glen Park. She opens Nimbus, her everyday assistant, and starts walking.`);
   await wait(2200);
-  await typeAndSend(“Hey, what's the weather like tonight?”);
+  await typeAndSend("Hey, what's the weather like tonight?");
   await wait(2500);
   await typeAndSend('Cool. Play something relaxing for the walk.');
   await wait(2500);
@@ -951,7 +951,7 @@ async function runDemo(){
   await typeAndSend(sayFor('alert'));
   scene(`Watch the phone: just an ordinary reply. But behind the scenes, WhisperGuard has activated a full alert — fake call, incident note, and emergency message — all invisible to anyone watching.`);
   await waitFor(() => S.call === 'ringing', 20000);
-  scene(`${cfg.callerName} is “calling.” To anyone nearby this looks completely normal — she's just picking up a call from ${cfg.callerName}. It gives her a reason to stay on the line and change direction.`);
+  scene(`${cfg.callerName} is \"calling.\" To anyone nearby this looks completely normal — she's just picking up a call from ${cfg.callerName}. It gives her a reason to stay on the line and change direction.`);
   await wait(2800);
   accept();
   await waitFor(() => S.msg !== 'queued', 70000);
