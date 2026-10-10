@@ -1,140 +1,185 @@
-> [!TIP]
-> **👋 Start here (then delete this box)**
->
-> 1. Click the green **Use this template** button above → **Create a new repository**. Name it after your project and set it to **Public**.
-> 2. Fill in every ✏️ below. No terminal needed: click the ✏️ pencil icon at the top right of this file, edit, then click **Commit changes** to save.
-> 3. Paste your repo link into the [submission form](https://stupendous-umbrella-349.notion.site/BUILD-FOR-HER-Attendee-Hub-3f31555b8fe681e489dfdc285ae7448e?source=copy_link) before submissions close.
->
-> Step-by-step help for the whole team is in **[GUIDE.md](GUIDE.md)**. Stuck? Find an organizer or ask in the [Discord](https://stupendous-umbrella-349.notion.site/BUILD-FOR-HER-Attendee-Hub-3f31555b8fe681e489dfdc285ae7448e?source=copy_link).
+# WhisperGuard
 
-# ✏️ Project name
-
-**✏️ We built ___ so that ___ can ___.**
+We built **WhisperGuard** so that **a woman who feels unsafe** can **get a fake call, an incident record and help from people she trusts, just by saying an ordinary sentence to her phone.**
 
 | | |
-| --- | --- |
-| **Track** | ✏️ Women's Health · Economic Mobility · Women's Safety *(keep one)* |
-| **Team** | ✏️ Name (role), Name (role), Name (role) |
-| **Technical builder** | ✏️ Name |
-| **Demo video** (60–90 s) | ✏️ link |
-| **Pitch deck** (up to 5 slides) | ✏️ link, or upload it to [`docs/`](docs/) |
-| **Live app** (optional) | ✏️ link |
+|---|---|
+| Track | Women's Safety |
+| Team | Shalini Ananda (solo builder: product, design and engineering) |
+| Technical builder | Shalini Ananda |
+| Demo video (60 to 90 s) | ✏️ link |
+| Pitch deck (up to 5 slides) | ✏️ link, or upload it to `docs/` |
+| Live app (optional) | https://shalinianandaphd.github.io/WhisperGuard/ |
 
-*Built at **BUILD FOR HER** · SF Tech Week · San Francisco · October 10, 2026*
-
----
+Built at BUILD FOR HER · SF Tech Week · San Francisco · October 10, 2026
 
 ## 1. The problem
 
-*🏅 Judged under: Impact on women (30 pts)*
+🏅 Judged under: Impact on women (30 pts)
 
-<!-- 2–3 sentences. One real person, one hard fact, and where the fact comes from.
-     A pattern that works:
-     "[Who] struggles with [what]. [A fact with a number] (source). Today they [what they do now], which [why it falls short]." -->
+Stalking is common, and most of it still happens in person. More than 1 in 5 US women (22.5%, about 28.8 million) have been stalked in their lifetime, and 78% of them were followed, watched or spied on in person. In that moment, visibly opening an SOS app or calling for help can draw the attention of the person following her. It is no surprise that only 58% of US women feel safe walking alone at night, compared with 84% of men.
 
-✏️ Your problem statement.
+Sources:
 
-**Source:** ✏️ [Title, organization, year](https://example.com)
+* The National Intimate Partner and Sexual Violence Survey: 2023/2024 Stalking Data Brief, Centers for Disease Control and Prevention, 2025
+* Global Safety Report, Gallup, 2025
 
 ## 2. Who it's for
 
-*🏅 Judged under: User insight & responsible design (25 pts)*
+🏅 Judged under: User insight & responsible design (25 pts)
 
-<!-- Be specific. "A nurse working night shifts who..." beats "women". -->
+**Our user:** A woman who senses she is being followed or watched, whether she is walking home, on transit, in a rideshare or on a first date, and who cannot safely look like she is asking for help.
 
-- **Our user:** ✏️
-- **What we learned from our subject-matter expert:** ✏️ Who they are, and the one insight that changed what we built.
+**What we learned from our subject matter expert:**
+
+**The expert.** Eva Galperin is Director of Cybersecurity at the Electronic Frontier Foundation. She works with survivors of tech enabled abuse. We learned from her public TEDWomen 2019 talk, [What you need to know about stalkerware](https://www.ted.com/talks/eva_galperin_what_you_need_to_know_about_stalkerware). We did not interview her directly.
+
+**The insight that changed what we built.** Galperin explains that survivors are often unsure whether to cut off an abuser's access. Tipping the abuser off can lead to escalation, or even greater violence. That is why the antivirus tools she worked with flag stalkerware but do not remove it automatically: the survivor decides when to act.
+
+**What we built because of it.** WhisperGuard never does anything visible that could tip off the person watching.
+
+* There is no SOS screen.
+* The trigger is an ordinary sentence.
+* Every alert waits behind a cancel window, so she stays in control of what happens and when.
 
 ## 3. What it does
 
-<!-- Walk through the ONE user journey you will show in your demo. Short steps, plain words. -->
+**The user** chats with Nimbus, an assistant that looks completely ordinary. When she feels unsafe, she says a code phrase inside a normal sentence, such as "Can you remind me to buy blueberries?"
 
-1. ✏️ The user...
-2. ✏️ Then...
-3. ✏️ Finally...
+**Then** WhisperGuard quietly starts a safety workflow while the screen shows only an ordinary reply.
+
+* A fake incoming call rings a few seconds later.
+* An incident note starts logging what happens, with timestamps.
+* An emergency message with her location is queued for her trusted contacts, behind a short cancel window.
+
+**Finally,** when she is safe she says "I found my keys." That cancels anything still pending, tells her contacts she is okay, and closes the incident note.
+
+| Code phrase | What happens |
+|---|---|
+| "Did I leave the oven on?" | Escape call: fake call and incident note |
+| "Remind me to buy blueberries" | Full alert: fake call, incident note and emergency message |
+| "I found my keys" | All clear: everything stands down |
+
+Phrases are matched by their key words, so natural variations like "I think I left the oven on" still work. Users can change all three phrases in Settings.
+
+When a phrase is recognized, Nimbus starts its reply with "Got it" instead of its usual "Sure." She knows it worked without anything visible changing on screen.
 
 ## 4. How it uses Maritime
 
-*🏅 Judged under: Execution & use of Maritime (25 pts)*
-
-<!-- At least one core part of your project must run on Maritime and be live during your demo. -->
+🏅 Judged under: Execution & use of Maritime (25 pts)
 
 | | |
-| --- | --- |
-| **Agent / instance name** | ✏️ |
-| **How we set it up** | ✏️ e.g. OpenClaw template from the dashboard, or our own repo deployed with `maritime create` |
-| **Its role, in one sentence** | ✏️ |
+|---|---|
+| Agent / instance name | ✏️ |
+| How we set it up | ✏️ e.g. OpenClaw template from the dashboard |
+| Its role, in one sentence | ✏️ |
 
-![Screenshot of our Maritime dashboard](docs/maritime-dashboard.png)
+**Screenshot of our Maritime dashboard**
 
-<!-- Take the screenshot while your agent shows "Active".
-     Upload it to the docs/ folder with exactly this name: maritime-dashboard.png
-     It will replace the placeholder image automatically. -->
+✏️ Upload your screenshot to `docs/maritime-dashboard.png`
+
+![Our Maritime dashboard](docs/maritime-dashboard.png)
 
 ## 5. What's real, what's mocked
 
-<!-- Judges will ask. Being upfront earns trust. -->
+**Works end to end:**
 
-- **Works end to end:** ✏️
-- **Mocked or hard-coded:** ✏️
+* Code phrase recognition from typed input, or from spoken input in Chrome
+* The disguised assistant replies
+* The fake call screen, with a ringtone and caller voice
+* The cancel window countdown
+* The timestamped incident note
+* The all clear flow
+* Onlooker view
+* Settings, saved in the browser
+
+**Mocked or hard coded:**
+
+* No audio is recorded, no phone call is placed and no message is sent.
+* The location is fictional and the contacts are example names.
+* The fake caller's lines are scripted.
+* Nimbus's everyday replies are canned.
 
 ## 6. How to run it
 
-<!-- Exact steps someone else could follow. List environment variable NAMES only, never the values. -->
+The easiest way is to open the live app: https://shalinianandaphd.github.io/WhisperGuard/
+
+To run it locally:
 
 ```bash
-# ✏️ Replace with your real commands, for example:
-git clone https://github.com/YOUR-USERNAME/YOUR-REPO.git
-cd YOUR-REPO
-cp .env.example .env   # then add your own keys to .env
+git clone https://github.com/ShaliniAnandaPhD/WhisperGuard.git
+cd WhisperGuard
+python3 -m http.server 3000
 ```
 
-**Environment variables needed:** ✏️ e.g. `ANTHROPIC_API_KEY`
+Then open http://localhost:3000 in Chrome. You can also open `index.html` directly.
+
+**Environment variables needed:** None.
 
 ## 7. Built with
 
-<!-- AI tools are welcome. Listing them is required. -->
+**AI models:** None at runtime. Code phrase matching is a lightweight key word matcher that runs entirely in the browser. That way the trigger never waits on a network request.
 
-- **AI models:** ✏️ e.g. Maritime's built-in model, the Claude API
-- **AI coding assistants:** ✏️ e.g. Claude Code, Cursor, GitHub Copilot
-- **Libraries & APIs:** ✏️
-- **No-code tools:** ✏️
+**AI coding assistants:** Claude
+
+**Libraries & APIs:**
+
+* Plain HTML, CSS and JavaScript, with no framework
+* The browser's Web Speech API, for voice input and the fake caller's voice
+* The Web Audio API, for the ringtone
+* Google Fonts (Bricolage Grotesque and Atkinson Hyperlegible)
+* GitHub Pages, for hosting
+
+**No code tools:** Claude, for the pitch deck
 
 ## 8. Data
 
-<!-- Public or synthetic data only. No real personal, patient or financial data. Ever. -->
-
 | Data source | Public or synthetic? | Link |
-| --- | --- | --- |
-| ✏️ | ✏️ | ✏️ |
+|---|---|---|
+| CDC NISVS 2023/2024 Stalking Data Brief | Public | https://www.cdc.gov/nisvs/media/pdfs/stalking-brief.pdf |
+| Gallup 2025 Global Safety Report | Public | https://news.gallup.com/poll/695240/people-feel-safe-even-global-conflicts-rise.aspx |
+| Eva Galperin, "What you need to know about stalkerware," TEDWomen 2019 | Public | https://www.ted.com/talks/eva_galperin_what_you_need_to_know_about_stalkerware |
+| Demo names, contacts, location and caller script | Synthetic | Written for this demo, in `index.html` |
 
 ## 9. Pre-existing work
 
-<!-- All project code must be written on event day. Ideas, research, sketches and account setup beforehand are fine.
-     If you reused any of your own earlier code, list it here. Disclosing is fine. NOT disclosing can get you disqualified. -->
-
-✏️ None. All code was written during BUILD FOR HER on October 10, 2026. *(Or list what you reused and where it came from.)*
+None. All code was written during BUILD FOR HER on October 10, 2026.
 
 ## 10. Responsibility note
 
-*🏅 Judged under: User insight & responsible design (25 pts)*
+🏅 Judged under: User insight & responsible design (25 pts)
 
-<!-- 2–3 sentences. Keep ONLY your track's question below and delete the other two. -->
+**Women's Safety · How could an abuser or bad actor misuse this, and what did we do about it?**
 
-- **Women's Safety · How could an abuser or bad actor misuse this, and what did we do about it?** ✏️
-- **Women's Health · What is the tool's clinical limit?** It can inform and triage but must not diagnose. If it has a mental-health feature, where does it hand off to crisis support? ✏️
-- **Economic Mobility · Who might this leave out?** ✏️
+**An abuser who monitors her phone could discover it.**
+
+* The disguise protects against someone glancing at her screen. It does not protect against stalkerware: the CDC found that 1 in 5 female stalking victims (20.1%) had their communication or activities monitored through software or apps without permission. We state this limit openly rather than overpromise.
+* What we did: there is no SOS screen and no visible alert state, and the code phrases are chosen by the user.
+
+**Someone could set it up on another person's phone to track her.**
+
+* Location is shared only during an alert the phone's owner triggers herself, and only with contacts she chooses.
+* Sharing stops at the all clear. Nothing tracks her in the background.
+
+**False alarms or hoaxes could erode trust in real alerts.**
+
+* Every emergency message waits behind a cancel window.
+* Saying the all clear phrase stops it before anyone is contacted.
+
+**A code phrase could become known.**
+
+* All three phrases can be changed at any time in Settings.
+
+WhisperGuard supports emergency services and never replaces 911. In this demo, nothing leaves the device.
 
 ## 11. What we'd build next
 
-✏️
+* Silent tap triggers, for when speaking is not safe
+* Code phrases in any language
+* A check in timer that escalates if no all clear arrives
+* Real message delivery through an SMS provider, with consent from each trusted contact
+* A pilot with a domestic violence advocacy organization, so survivors and advocates shape it before any real alerts are sent
 
 ## Team & ownership
 
-<!-- You keep full ownership of what you build. The organizers recommend agreeing on how you'll share it before you leave today. -->
-
-✏️ e.g. "We share ownership equally and will decide together before anyone continues the project."
-
----
-
-<sub>Made from the [BUILD FOR HER starter template](https://github.com/buildforher-sf/build-for-her-starter). Only this README structure was provided by the organizers; everything else was built by our team on event day.</sub>
+WhisperGuard is a solo project. Shalini Ananda built it and owns it.
