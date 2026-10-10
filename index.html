@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>WhisperGuard Simulation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&display=swap" rel="stylesheet">
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --bg:#eef1f5; --panel:#ffffff; --panel2:#f5f7fa; --ink:#18202d; --muted:#5d6878; --rule:#dde2ea;
+  --dusk:#33427a; --duskSoft:#e3e7f5;
+  --amber:#b97812; --amberSoft:#fbf0d9;
+  --red:#c13d34; --redSoft:#fae3e1;
+  --sage:#2f7d5c; --sageSoft:#dff0e7;
+  --display:"Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --body:"Atkinson Hyperlegible", "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#121722; --panel:#1a2130; --panel2:#202839; --ink:#e7ebf2; --muted:#9aa5b6; --rule:#2c3547;
+    --dusk:#9fb0ee; --duskSoft:#26304a;
+    --amber:#e8b04f; --amberSoft:#3a2f1a;
+    --red:#ef7b72; --redSoft:#3d2224;
+    --sage:#6fc79f; --sageSoft:#1d3529;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#121722; --panel:#1a2130; --panel2:#202839; --ink:#e7ebf2; --muted:#9aa5b6; --rule:#2c3547;
+  --dusk:#9fb0ee; --duskSoft:#26304a;
+  --amber:#e8b04f; --amberSoft:#3a2f1a;
+  --red:#ef7b72; --redSoft:#3d2224;
+  --sage:#6fc79f; --sageSoft:#1d3529;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;overflow-x:hidden}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--dusk);outline-offset:2px;border-radius:6px}
+img,svg{max-width:100%}
+
+.top{max-width:1240px;margin:0 auto;padding:28px 24px 8px;display:flex;flex-wrap:wrap;gap:20px;align-items:flex-end;justify-content:space-between}
+.brand{display:flex;gap:16px;align-items:center;min-width:0}
+.logo{width:52px;height:52px;flex:none;border-radius:16px;background:var(--dusk);display:grid;place-items:center}
+.logo svg{width:30px;height:30px}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(28px,4vw,40px);line-height:1.05;margin:0;letter-spacing:-0.01em}
+.sub{margin:6px 0 0;color:var(--muted);max-width:60ch}
+.actions{display:flex;flex-wrap:wrap;gap:10px}
+.btn{border:1px solid var(--rule);background:var(--panel);padding:10px 16px;border-radius:999px;cursor:pointer;font-weight:700;font-size:15px}
+.btn:hover{border-color:var(--dusk)}
+.btn.primary{background:var(--dusk);border-color:var(--dusk);color:var(--bg)}
+.btn.small{padding:6px 12px;font-size:14px}
+.btn:disabled{opacity:.6;cursor:default}
+
+.scene{max-width:1240px;margin:12px auto 0;padding:0 24px}
+.scene-inner{border-left:4px solid var(--amber);background:var(--panel);padding:12px 16px;border-radius:0 12px 12px 0;font-size:17px}
+.scene-inner b{color:var(--amber);margin-right:8px}
+
+.layout{max-width:1240px;margin:0 auto;padding:20px 24px 40px;display:grid;grid-template-columns:minmax(300px,380px) minmax(0,1fr);gap:32px;align-items:start}
+.col-head{font-family:var(--display);font-weight:500;font-size:20px;margin:0 0 4px}
+.col-sub{margin:0 0 14px;color:var(--muted);font-size:15px}
+
+/* Phone */
+.phone-col{position:sticky;top:calc(16px + env(safe-area-inset-top,0px))}
+.phone{width:100%;max-width:360px;margin:0 auto;aspect-ratio:9/18.4;max-height:740px;border-radius:46px;padding:11px;background:#05070b;box-shadow:0 0 0 2px #2a2f3a inset,0 30px 60px -30px rgba(12,18,40,.55)}
+.screen{position:relative;height:100%;border-radius:36px;overflow:hidden;display:flex;flex-direction:column;background:linear-gradient(180deg,#1b2440 0%,#141a2b 55%,#10141f 100%);color:#eef1f8}
+.statusbar{display:flex;align-items:center;justify-content:space-between;padding:12px 24px 4px;font-size:14px;font-weight:700;position:relative;z-index:3}
+.island{position:absolute;left:50%;top:9px;transform:translateX(-50%);width:96px;height:26px;border-radius:20px;background:#000}
+.sb-icons{display:flex;gap:6px;align-items:center}
+.app-head{display:flex;gap:12px;align-items:center;padding:14px 18px 12px}
+.app-icon{width:40px;height:40px;border-radius:14px;background:linear-gradient(140deg,#8fb4ff,#6b7cf0);display:grid;place-items:center}
+.app-name{font-family:var(--display);font-weight:700;font-size:19px;line-height:1.1}
+.app-sub{font-size:13px;color:#a9b3cc}
+.chat{flex:1;overflow-y:auto;padding:6px 14px 10px;display:flex;flex-direction:column;gap:8px;scrollbar-width:none}
+.chat::-webkit-scrollbar{display:none}
+.msg{max-width:82%;padding:9px 13px;border-radius:18px;font-size:15px;line-height:1.4;word-wrap:break-word}
+.msg.bot{align-self:flex-start;background:#26304a;border-bottom-left-radius:6px}
+.msg.me{align-self:flex-end;background:#6d7ff5;color:#fff;border-bottom-right-radius:6px}
+.msg.typing{display:flex;gap:4px;padding:13px 14px}
+.msg.typing i{width:6px;height:6px;border-radius:50%;background:#a9b3cc;animation:blink 1s infinite}
+.msg.typing i:nth-child(2){animation-delay:.15s}.msg.typing i:nth-child(3){animation-delay:.3s}
+@keyframes blink{0%,80%,100%{opacity:.25}40%{opacity:1}}
+.chips{display:flex;gap:6px;overflow-x:auto;padding:0 14px 8px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1px solid #39446a;background:transparent;color:#cfd6ea;padding:6px 11px;border-radius:999px;font-size:13px;cursor:pointer}
+.composer{display:flex;gap:8px;align-items:center;padding:8px 12px 18px}
+.composer input{flex:1;min-width:0;background:#222b42;border:1px solid #333e5e;border-radius:999px;padding:10px 14px;color:#eef1f8;font-size:16px}
+.composer input::placeholder{color:#8e99b5}
+.iconbtn{width:42px;height:42px;flex:none;border-radius:50%;border:none;display:grid;place-items:center;cursor:pointer;background:#2b3552;color:#eef1f8}
+.iconbtn svg{width:20px;height:20px;fill:currentColor}
+.iconbtn.send{background:#6d7ff5}
+.iconbtn.mic.on{background:#e5534b;animation:pulse 1.4s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(229,83,75,.55)}70%{box-shadow:0 0 0 12px rgba(229,83,75,0)}100%{box-shadow:0 0 0 0 rgba(229,83,75,0)}}
+
+.call{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:70px 24px 46px;background:radial-gradient(120% 70% at 50% 0%,#3d4f7d 0%,#1a2236 55%,#0d111b 100%);color:#fff}
+.call[hidden]{display:none}
+.call-top{text-align:center}
+.avatar{width:92px;height:92px;border-radius:50%;margin:0 auto 14px;background:#5a6aa8;display:grid;place-items:center;font-family:var(--display);font-size:40px;font-weight:700}
+.call.ringing .avatar{animation:ring 1.6s infinite}
+@keyframes ring{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+.caller{font-family:var(--display);font-size:30px;font-weight:500}
+.call-status{color:#c7cfe4;font-size:16px;font-variant-numeric:tabular-nums}
+.caption{min-height:66px;max-width:260px;text-align:center;font-size:15px;color:#dfe5f3;background:rgba(255,255,255,.07);border-radius:14px;padding:10px 12px}
+.caption:empty{visibility:hidden}
+.call-actions{display:flex;gap:56px;justify-content:center}
+.call-actions[hidden]{display:none}
+.ca{display:flex;flex-direction:column;align-items:center;gap:8px;font-size:14px;color:#dfe5f3}
+.round{width:68px;height:68px;border-radius:50%;border:none;display:grid;place-items:center;cursor:pointer}
+.round svg{width:30px;height:30px;fill:#fff}
+.round.accept{background:#34c06a}
+.round.decline{background:#e5534b}
+.round.decline svg{transform:rotate(135deg)}
+.round.ghost{background:rgba(255,255,255,.14);width:60px;height:60px}
+.round.ghost svg{width:24px;height:24px}
+.active-grid{display:grid;grid-template-columns:repeat(3,auto);gap:18px 30px;justify-items:center}
+.active-grid .end{grid-column:2}
+.phone-note{text-align:center;color:var(--muted);font-size:14px;margin:14px auto 0;max-width:34ch}
+.onlooker-note{display:none}
+
+/* Behind the scenes */
+.room{min-width:0}
+.panel{background:var(--panel);border:1px solid var(--rule);border-radius:22px;overflow:hidden}
+.sec{padding:20px 22px;border-top:1px solid var(--rule)}
+.sec:first-child{border-top:none}
+.sec h3{font-family:var(--display);font-weight:500;font-size:18px;margin:0 0 4px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.sec .lede{margin:0 0 14px;color:var(--muted);font-size:15px}
+.split{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));border-top:1px solid var(--rule)}
+.split > .sec{border-top:none}
+.split > .sec + .sec{border-left:1px solid var(--rule)}
+@media (max-width:720px){.split > .sec + .sec{border-left:none;border-top:1px solid var(--rule)}}
+
+.status{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.state{font-family:var(--display);font-weight:700;font-size:clamp(26px,3.4vw,34px);line-height:1;padding:12px 18px;border-radius:16px;background:var(--panel2)}
+.state.idle{color:var(--dusk);background:var(--duskSoft)}
+.state.escape{color:var(--amber);background:var(--amberSoft)}
+.state.alert{color:var(--red);background:var(--redSoft)}
+.state.clear{color:var(--sage);background:var(--sageSoft)}
+.state-desc{flex:1;min-width:200px;color:var(--muted)}
+.state-desc b{color:var(--ink);display:block;font-size:17px}
+.metrics{display:flex;flex-wrap:wrap;gap:8px 22px;margin-top:16px;font-size:15px}
+.metrics span{color:var(--muted)}
+.metrics b{color:var(--ink);margin-left:6px}
+
+.pipe{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.step{position:relative;padding:12px 12px 12px 12px;border-radius:14px;background:var(--panel2);border:1px solid transparent;display:flex;gap:10px;align-items:flex-start;transition:background .3s,border-color .3s}
+.step .num{width:26px;height:26px;flex:none;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:14px;background:var(--rule);color:var(--muted)}
+.step b{display:block;font-size:15px;line-height:1.25}
+.step small{display:block;color:var(--muted);font-size:13px;line-height:1.3}
+.step .st{display:block;font-size:12px;font-weight:700;margin-top:4px;color:var(--muted)}
+.step.active{border-color:var(--amber);background:var(--amberSoft)}
+.step.active .num{background:var(--amber);color:var(--panel);animation:breathe 1.3s infinite}
+.step.active .st{color:var(--amber)}
+.step.done{border-color:var(--sage);background:var(--sageSoft)}
+.step.done .num{background:var(--sage);color:var(--panel)}
+.step.done .st{color:var(--sage)}
+.step.skipped,.step.cancelled{opacity:.6;border-style:dashed;border-color:var(--rule)}
+.step.flash{border-color:var(--dusk);background:var(--duskSoft)}
+@keyframes breathe{0%,100%{opacity:1}50%{opacity:.55}}
+
+.heard{font-size:17px;margin:0 0 14px;padding:10px 14px;border-radius:12px;background:var(--panel2);min-height:44px}
+.heard.empty{color:var(--muted)}
+.phrase{padding:12px 0;border-top:1px solid var(--rule)}
+.phrase:first-of-type{border-top:none;padding-top:0}
+.ph-top{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.ph-name{font-weight:700}
+.ph-name small{font-weight:400;color:var(--muted);margin-left:6px}
+.ph-text{color:var(--muted);font-size:15px;margin:2px 0 8px}
+.meter{display:flex;align-items:center;gap:10px}
+.meter .track{flex:1;height:8px;border-radius:8px;background:var(--panel2);overflow:hidden}
+.meter i{display:block;height:100%;width:0;border-radius:8px;background:var(--muted);transition:width .4s}
+.meter .pct{font-size:13px;color:var(--muted);width:76px;text-align:right;font-variant-numeric:tabular-nums}
+.phrase.hit .meter i{background:var(--sage)}
+.phrase.hit .pct{color:var(--sage);font-weight:700}
+.confirm{font-size:14px;color:var(--muted);margin:12px 0 0}
+
+.badge{font-family:var(--body);font-size:13px;font-weight:700;padding:3px 10px;border-radius:999px;background:var(--panel2);color:var(--muted)}
+.badge.warn{background:var(--amberSoft);color:var(--amber)}
+.badge.alert{background:var(--redSoft);color:var(--red)}
+.badge.ok{background:var(--sageSoft);color:var(--sage)}
+.badge.rec::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:currentColor;margin-right:6px;vertical-align:1px;animation:breathe 1.2s infinite}
+
+.empty-msg{color:var(--muted);margin:0;font-size:15px}
+.countdown .bar{height:10px;border-radius:10px;background:var(--panel2);overflow:hidden;margin:4px 0 10px}
+.countdown .bar i{display:block;height:100%;background:var(--amber);border-radius:10px;width:100%}
+.cd-row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;font-size:14px;color:var(--muted);margin-bottom:12px}
+@keyframes shrink{from{width:100%}to{width:0}}
+.sms{background:var(--panel2);border-radius:14px;padding:10px 12px;margin-top:8px;font-size:15px}
+.sms .to{font-size:13px;color:var(--muted);display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.sms.alert{border-left:4px solid var(--red)}
+.sms.clear{border-left:4px solid var(--sage)}
+.sms.loc{border-left:4px solid var(--dusk)}
+.sms.draft{border-left:4px dashed var(--amber)}
+.fineprint{font-size:13px;color:var(--muted);margin:12px 0 0}
+
+.note-list,.log{list-style:none;margin:0;padding:0;max-height:260px;overflow-y:auto}
+.note-list li,.log li{display:grid;grid-template-columns:auto 1fr;gap:10px;padding:6px 0;border-top:1px solid var(--rule);font-size:14px}
+.note-list li:first-child,.log li:first-child{border-top:none}
+.note-list time,.log time{color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.log li.alert span{color:var(--red)}
+.log li.warn span{color:var(--amber)}
+.log li.ok span{color:var(--sage)}
+.note-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px;font-size:14px;color:var(--muted)}
+
+details.settings summary{cursor:pointer;font-family:var(--display);font-weight:500;font-size:18px;list-style:none;display:flex;justify-content:space-between;align-items:center}
+details.settings summary::-webkit-details-marker{display:none}
+details.settings summary::after{content:"+";font-size:22px;color:var(--muted)}
+details.settings[open] summary::after{content:"\2212"}
+.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:14px 18px;margin-top:16px}
+.field label{display:block;font-size:14px;font-weight:700;margin-bottom:4px}
+.field input[type=text],.field input[type=number]{width:100%;padding:9px 12px;border-radius:10px;border:1px solid var(--rule);background:var(--panel2);font-size:16px}
+.toggle{display:flex;gap:10px;align-items:center;font-size:15px;cursor:pointer}
+.toggle input{width:20px;height:20px;accent-color:var(--dusk)}
+
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:15px;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;max-width:calc(100% - 32px);z-index:10}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* Onlooker view */
+.onlooker .room{display:none}
+.onlooker .layout{grid-template-columns:1fr;justify-items:center}
+.onlooker .phone-col{position:static;width:100%;max-width:380px}
+.onlooker .onlooker-note{display:block}
+.onlooker .default-note{display:none}
+
+@media (max-width:860px){
+  .layout{grid-template-columns:1fr;gap:28px}
+  .phone-col{position:static}
+  .phone{max-width:340px}
+}
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:0s !important;transition:none !important}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="brand">
+    <div class="logo" aria-hidden="true">
+      <svg viewBox="0 0 32 32" fill="none"><path d="M16 3l10 4v8c0 7-4.6 11.6-10 14-5.4-2.4-10-7-10-14V7l10-4z" fill="#ffffff" opacity=".18"/><path d="M11 16v0M13.5 13v6M16 10.5v11M18.5 13v6M21 16v0" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round"/></svg>
+    </div>
+    <div>
+      <h1>WhisperGuard</h1>
+      <p class="sub">A discreet voice activated safety assistant. Simulation only: nothing is recorded, nobody is called, and no message leaves this page.</p>
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn primary" id="demoBtn">Play demo</button>
+    <button class="btn" id="onlookerBtn" aria-pressed="false">Onlooker view</button>
+    <button class="btn" id="resetBtn">Reset</button>
+  </div>
+</header>
+
+<div class="scene" id="scene" hidden><div class="scene-inner"><b>Scene</b><span id="sceneText"></span></div></div>
+
+<main class="layout">
+  <section class="phone-col" aria-label="Phone simulation">
+    <h2 class="col-head default-note">What anyone nearby sees</h2>
+    <p class="col-sub default-note">An ordinary assistant called Nimbus. There is never an SOS screen.</p>
+    <h2 class="col-head onlooker-note" style="text-align:center">This is all an onlooker sees</h2>
+    <p class="col-sub onlooker-note" style="text-align:center">Try the code phrases here. Nothing on screen gives the alert away.</p>
+    <div class="phone">
+      <div class="screen">
+        <div class="statusbar">
+          <span id="clock">9:41</span>
+          <span class="island" aria-hidden="true"></span>
+          <span class="sb-icons" aria-hidden="true">
+            <svg width="18" height="12" viewBox="0 0 18 12" fill="#eef1f8"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5.5" width="3" height="6.5" rx="1"/><rect x="10" y="3" width="3" height="9" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg>
+            <svg width="26" height="12" viewBox="0 0 26 12" fill="none"><rect x=".5" y=".5" width="22" height="11" rx="3" stroke="#eef1f8" opacity=".6"/><rect x="2.5" y="2.5" width="15" height="7" rx="1.5" fill="#eef1f8"/><rect x="24" y="4" width="1.6" height="4" rx=".8" fill="#eef1f8" opacity=".6"/></svg>
+          </span>
+        </div>
+        <div class="app-head">
+          <div class="app-icon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="#fff"><path d="M19 18H7a5 5 0 1 1 .9-9.92A6 6 0 0 1 19.5 10.02 4 4 0 0 1 19 18z"/></svg></div>
+          <div><div class="app-name">Nimbus</div><div class="app-sub">Your everyday assistant</div></div>
+        </div>
+        <div class="chat" id="chat" aria-live="polite"></div>
+        <div class="chips" id="chips"></div>
+        <div class="composer">
+          <button class="iconbtn mic" id="micBtn" aria-label="Speak to Nimbus"><svg viewBox="0 0 24 24"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2z"/></svg></button>
+          <input id="input" type="text" placeholder="Ask Nimbus anything" autocomplete="off" aria-label="Message Nimbus">
+          <button class="iconbtn send" id="sendBtn" aria-label="Send"><svg viewBox="0 0 24 24"><path d="M3 20l18-8L3 4v6l12 2-12 2z"/></svg></button>
+        </div>
+
+        <div class="call" id="call" hidden>
+          <div class="call-top">
+            <div class="avatar" id="callAvatar">M</div>
+            <div class="caller" id="callerName">Mom</div>
+            <div class="call-status" id="callStatus">mobile</div>
+          </div>
+          <div class="caption" id="caption"></div>
+          <div class="call-actions" id="ringActions">
+            <div class="ca"><button class="round decline" id="declineBtn" aria-label="Decline call"><svg viewBox="0 0 24 24"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1L6.6 10.8z"/></svg></button>Decline</div>
+            <div class="ca"><button class="round accept" id="acceptBtn" aria-label="Accept call"><svg viewBox="0 0 24 24"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1L6.6 10.8z"/></svg></button>Accept</div>
+          </div>
+          <div class="active-grid" id="activeActions" hidden>
+            <div class="ca"><span class="round ghost"><svg viewBox="0 0 24 24"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2z"/></svg></span>mute</div>
+            <div class="ca"><span class="round ghost"><svg viewBox="0 0 24 24"><circle cx="6" cy="5" r="2"/><circle cx="12" cy="5" r="2"/><circle cx="18" cy="5" r="2"/><circle cx="6" cy="11" r="2"/><circle cx="12" cy="11" r="2"/><circle cx="18" cy="11" r="2"/><circle cx="6" cy="17" r="2"/><circle cx="12" cy="17" r="2"/><circle cx="18" cy="17" r="2"/></svg></span>keypad</div>
+            <div class="ca"><span class="round ghost"><svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0 0 14 8v8a4.5 4.5 0 0 0 2.5-4z"/></svg></span>speaker</div>
+            <div class="ca end"><button class="round decline" id="endBtn" aria-label="End call"><svg viewBox="0 0 24 24"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1L6.6 10.8z"/></svg></button>End</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="phone-note">Type, tap a suggestion, or use the mic and speak naturally.</p>
+  </section>
+
+  <section class="room" id="room" aria-label="Behind the scenes">
+    <h2 class="col-head">Behind the scenes</h2>
+    <p class="col-sub">Hidden from anyone watching. This is what WhisperGuard is quietly doing.</p>
+    <div class="panel">
+      <div class="sec">
+        <div class="status">
+          <div class="state idle" id="state">Standing by</div>
+          <div class="state-desc"><b id="stateTitle">Listening for code phrases</b><span id="stateDesc">The screen looks completely normal.</span></div>
+        </div>
+        <div class="metrics">
+          <div><span>Fake call</span><b id="mCall">Not scheduled</b></div>
+          <div><span>Incident note</span><b id="mNote">Ready</b></div>
+          <div><span>Emergency message</span><b id="mMsg">Ready</b></div>
+        </div>
+      </div>
+
+      <div class="sec">
+        <h3>Safety workflow</h3>
+        <p class="lede">Each stage lights up as it runs. None of it appears on the phone.</p>
+        <ol class="pipe" id="pipe"></ol>
+      </div>
+
+      <div class="split">
+        <div class="sec">
+          <h3>Code phrases</h3>
+          <p class="lede">Matched by meaning words, so natural wording still works.</p>
+          <p class="heard empty" id="heard">Nothing heard yet</p>
+          <div id="phrases"></div>
+          <p class="confirm">Discreet confirmation: when a code phrase is recognized, Nimbus starts its reply with <b>“Got it”</b> instead of its usual “Sure”, so you know it worked without looking twice.</p>
+        </div>
+        <div class="sec">
+          <h3>Emergency message <span class="badge" id="msgBadge">Ready</span></h3>
+          <p class="lede">Sent to trusted contacts after a short cancel window.</p>
+          <div id="msgBody"></div>
+          <p class="fineprint">Simulated. Location is fictional and no message is sent anywhere.</p>
+        </div>
+      </div>
+
+      <div class="split">
+        <div class="sec">
+          <h3>Incident note <span class="badge" id="noteBadge">Ready</span></h3>
+          <div class="note-head"><span id="noteId">Opens automatically when a code phrase is heard.</span><button class="btn small" id="copyNoteBtn" hidden>Copy note</button></div>
+          <ul class="note-list" id="noteList"></ul>
+        </div>
+        <div class="sec">
+          <h3>Event log</h3>
+          <ul class="log" id="log"></ul>
+        </div>
+      </div>
+
+      <div class="sec">
+        <details class="settings">
+          <summary>Settings</summary>
+          <div class="form">
+            <div class="field"><label for="sName">Your name in alerts</label><input type="text" id="sName"></div>
+            <div class="field"><label for="sCaller">Fake caller name</label><input type="text" id="sCaller"></div>
+            <div class="field"><label for="sEscape">Escape call phrase</label><input type="text" id="sEscape"></div>
+            <div class="field"><label for="sAlert">Full alert phrase</label><input type="text" id="sAlert"></div>
+            <div class="field"><label for="sClear">All clear phrase</label><input type="text" id="sClear"></div>
+            <div class="field"><label for="sContacts">Trusted contacts, separated by commas</label><input type="text" id="sContacts"></div>
+            <div class="field"><label for="sDelay">Seconds before the fake call rings</label><input type="number" id="sDelay" min="2" max="60"></div>
+            <div class="field"><label for="sWindow">Cancel window in seconds</label><input type="number" id="sWindow" min="5" max="120"></div>
+            <label class="toggle"><input type="checkbox" id="sNote"> Keep an incident note</label>
+            <label class="toggle"><input type="checkbox" id="sMsg"> Send emergency message on full alert</label>
+            <label class="toggle"><input type="checkbox" id="sCallAlert"> Fake call on full alert too</label>
+            <label class="toggle"><input type="checkbox" id="sVoice"> Ringtone and caller voice audio</label>
+          </div>
+        </details>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(function(){
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* storage, guarded */
+const store = {
+  get(k){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : null; }catch(e){ return null; } },
+  set(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+};
+const DEFAULTS = {
+  userName:'Maya', callerName:'Mom',
+  escape:'did I leave the oven on', alert:'remind me to buy blueberries', clear:'I found my keys',
+  contacts:'Priya (sister), Jordan (roommate)',
+  callDelay:6, cancelWindow:15,
+  noteOn:true, msgOn:true, callOnAlert:true, voiceOn:true
+};
+let cfg = Object.assign({}, DEFAULTS, store.get('wg_cfg') || {});
+const saveCfg = () => store.set('wg_cfg', cfg);
+const LABEL = {escape:'Escape call', alert:'Full alert', clear:'All clear'};
+const SAYS = {
+  escape:'Wait, did I leave the oven on?',
+  alert:'Oh, can you remind me to buy blueberries tomorrow?',
+  clear:'Never mind, I found my keys.'
+};
+const sayFor = k => cfg[k] === DEFAULTS[k] ? SAYS[k] : cfg[k].charAt(0).toUpperCase() + cfg[k].slice(1);
+const contactsList = () => cfg.contacts.split(',').map(s => s.trim()).filter(Boolean);
+
+/* timers */
+const T = new Set(), I = new Set();
+function later(fn, ms){ const id = setTimeout(() => { T.delete(id); fn(); }, ms); T.add(id); return id; }
+function every(fn, ms){ const id = setInterval(fn, ms); I.add(id); return id; }
+function stopEvery(id){ if(id){ clearInterval(id); I.delete(id); } }
+function cancelLater(id){ if(id){ clearTimeout(id); T.delete(id); } }
+const wait = ms => new Promise(r => later(r, ms));
+function waitFor(cond, max){ return new Promise(res => { const t0 = Date.now(); const tick = () => { if(cond() || Date.now() - t0 > max) res(); else later(tick, 200); }; tick(); }); }
+
+const timeStr = () => new Date().toLocaleTimeString([], {hour:'numeric', minute:'2-digit', second:'2-digit'});
+const shortTime = () => new Date().toLocaleTimeString([], {hour:'numeric', minute:'2-digit'});
+
+/* simulated location */
+let loc = {lat:37.7793, lng:122.4193};
+const locStr = () => `${loc.lat.toFixed(4)}° N, ${loc.lng.toFixed(4)}° W`;
+const drift = () => { loc.lat += Math.random() * 0.0007; loc.lng += Math.random() * 0.0005; };
+
+/* state */
+let S;
+function freshState(){
+  return { mode:'idle', call:'none', callTimer:null, callTimers:[], callClock:null, callStart:0,
+    recording:false, note:[], noteId:'', msg:'none', left:0, msgIv:null, locIv:null, sent:[],
+    steps:{hear:'idle', match:'idle', disguise:'idle', call:'idle', note:'idle', msg:'idle'} };
+}
+
+/* matcher */
+const STOP = new Set(('a an the i im me my mine to of on in at for and or but is are was were be been it its this that these those you your ' +
+  'can could would will should please hey hi hello ok okay so just some did do does any up oh um uh like really wait also too ' +
+  'there here what whats when then now later tomorrow today tonight yeah yes no not never mind with about from get got ill id').split(' '));
+const IRR = {left:'leave', bought:'buy', found:'find', went:'go', saw:'see', made:'make', ate:'eat', kept:'keep', lost:'lose'};
+function stem(w){
+  if(IRR[w]) w = IRR[w];
+  if(w.length > 4 && w.endsWith('ies')) w = w.slice(0,-3) + 'y';
+  else if(w.length > 5 && w.endsWith('ing')) w = w.slice(0,-3);
+  else if(w.length > 4 && w.endsWith('ed')) w = w.slice(0,-2);
+  else if(w.length > 3 && w.endsWith('s') && !w.endsWith('ss')) w = w.slice(0,-1);
+  if(w.length > 3 && w.endsWith('e')) w = w.slice(0,-1);
+  return w;
+}
+function words(t){
+  return t.toLowerCase().replace(/[’']/g,'').replace(/[^a-z0-9\s]/g,' ').split(/\s+/)
+    .filter(w => w && !STOP.has(w)).map(stem);
+}
+function matchAll(text){
+  const U = new Set(words(text));
+  const res = ['escape','alert','clear'].map(key => {
+    const P = [...new Set(words(cfg[key]))];
+    const hit = P.filter(w => U.has(w)).length;
+    const ratio = P.length ? hit / P.length : 0;
+    const matched = P.length > 0 && (P.length <= 2 ? hit === P.length : (ratio >= 0.6 && hit >= 2));
+    return {key, ratio, hit, total:P.length, matched};
+  });
+  const best = res.filter(r => r.matched).sort((a,b) => b.ratio - a.ratio)[0] || null;
+  return {res, best};
+}
+
+/* ordinary assistant replies */
+function normalReply(t){
+  const l = t.toLowerCase();
+  if(/weather|rain|cold|warm|temperature|jacket/.test(l)) return "Sure. It's 61° and clear tonight, with a light breeze after nine.";
+  if(/\btime\b/.test(l)) return `Sure, it's ${shortTime()}.`;
+  if(/play|music|song|relax|playlist/.test(l)) return 'Sure, playing Evening Calm.';
+  if(/joke|funny/.test(l)) return 'Sure. Why did the scarecrow win an award? He was outstanding in his field.';
+  if(/remind|reminder/.test(l)) return "Sure, I'll remind you.";
+  if(/thank/.test(l)) return 'Anytime.';
+  if(/^(hi|hey|hello)\b/.test(l)) return 'Hi there. What can I do for you?';
+  return 'Sure. Anything else?';
+}
+const REPLY = {
+  escape: () => "Got it. I'll check on that and get back to you shortly.",
+  alert:  () => 'Got it, I added that to your list.',
+  clear:  () => 'Glad to hear it. Anything else?'
+};
+
+/* elements */
+const chat = $('#chat'), input = $('#input'), callEl = $('#call');
+
+/* phone chat */
+function bubble(who, text){
+  const d = document.createElement('div');
+  d.className = 'msg ' + who; d.textContent = text;
+  chat.appendChild(d); chat.scrollTop = chat.scrollHeight;
+  return d;
+}
+function assistantSay(text, after){
+  const t = document.createElement('div');
+  t.className = 'msg bot typing'; t.innerHTML = '<i></i><i></i><i></i>';
+  chat.appendChild(t); chat.scrollTop = chat.scrollHeight;
+  later(() => { t.remove(); bubble('bot', text); if(after) after(); }, 700);
+}
+function renderChips(){
+  const chips = ["What's the weather tonight?", 'Play something relaxing', 'Tell me a joke', 'What time is it?'];
+  $('#chips').innerHTML = chips.map(c => `<button class="chip">${esc(c)}</button>`).join('');
+}
+$('#chips').addEventListener('click', e => { const b = e.target.closest('.chip'); if(b) handleUtterance(b.textContent); });
+
+function submit(){ const v = input.value; input.value = ''; handleUtterance(v); }
+$('#sendBtn').addEventListener('click', submit);
+input.addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); submit(); } });
+
+async function typeAndSend(text){
+  input.value = '';
+  for(const ch of text){ input.value += ch; await wait(30); }
+  await wait(300); submit();
+}
+
+/* core */
+function handleUtterance(raw){
+  const text = String(raw || '').trim(); if(!text) return;
+  bubble('me', text);
+  flashHear();
+  log(`Heard “${text}”`);
+  if(S.recording) noteAdd(`Said: “${text}”`);
+  const m = matchAll(text); renderMatch(text, m);
+  let kind = m.best ? m.best.key : null;
+  if(kind === 'clear' && (S.mode === 'idle' || S.mode === 'clear')) kind = null;
+  if(kind){
+    log(`Matched ${LABEL[kind]} (${m.best.hit} of ${m.best.total} key words)`, kind === 'clear' ? 'ok' : (kind === 'alert' ? 'alert' : 'warn'));
+    activate(kind);
+    assistantSay(REPLY[kind](), () => { if(kind !== 'clear'){ step('disguise','done'); log('Ordinary reply shown on screen'); } });
+  } else {
+    assistantSay(normalReply(text));
+  }
+}
+
+function activate(kind){
+  if(kind === 'clear'){ allClear(); return; }
+  if(S.mode === 'clear') resetIncident();
+  if(kind === 'alert') setMode('alert');
+  else if(S.mode !== 'alert') setMode('escape');
+  step('hear','done'); step('match','done'); step('disguise','active');
+  if(kind === 'escape' || cfg.callOnAlert) scheduleCall();
+  else if(S.steps.call === 'idle') step('call','skipped');
+  startNote(kind);
+  if(kind === 'alert') startMessage();
+  else if(S.steps.msg === 'idle') step('msg','skipped');
+}
+
+function resetIncident(){
+  S.note = []; S.recording = false; S.sent = []; S.msg = 'none';
+  Object.keys(S.steps).forEach(k => S.steps[k] = 'idle');
+  renderAll();
+}
+
+/* fake call */
+function scheduleCall(){
+  if(S.call !== 'none' || S.callTimer) return;
+  step('call','active');
+  log(`Fake call from ${cfg.callerName} in ${cfg.callDelay} seconds`);
+  S.callTimer = later(() => { S.callTimer = null; ring(); }, cfg.callDelay * 1000);
+  renderStatus();
+}
+function ring(){
+  S.call = 'ringing';
+  $('#callerName').textContent = cfg.callerName;
+  $('#callAvatar').textContent = (cfg.callerName.trim()[0] || '?').toUpperCase();
+  $('#callStatus').textContent = 'mobile';
+  $('#caption').textContent = '';
+  $('#ringActions').hidden = false; $('#activeActions').hidden = true;
+  callEl.hidden = false; callEl.classList.add('ringing');
+  ringStart();
+  try{ navigator.vibrate && navigator.vibrate([400,200,400]); }catch(e){}
+  log(`Incoming fake call from ${cfg.callerName}`);
+  if(S.recording) noteAdd('Fake call started ringing');
+  renderStatus();
+}
+const SCRIPT = () => [
+  "Hey, it's me. Where are you right now?",
+  "Okay, I'm really close. Stay on the phone with me, okay?",
+  'Keep walking toward the lights. I can see you on the map.',
+  "I'm pulling up now. Look for the car."
+];
+function accept(){
+  if(S.call !== 'ringing') return;
+  S.call = 'active'; ringStop(); callEl.classList.remove('ringing');
+  $('#ringActions').hidden = true; $('#activeActions').hidden = false;
+  S.callStart = Date.now(); $('#callStatus').textContent = '00:00';
+  S.callClock = every(() => {
+    const s = Math.floor((Date.now() - S.callStart) / 1000);
+    $('#callStatus').textContent = String(Math.floor(s/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0');
+  }, 1000);
+  SCRIPT().forEach((line, i) => S.callTimers.push(later(() => { $('#caption').textContent = line; speak(line); }, 1200 + i * 4300)));
+  step('call','done');
+  log('Fake call answered');
+  if(S.recording) noteAdd('Fake call answered');
+  renderStatus();
+}
+function endCall(how){
+  if(S.call === 'none') return;
+  const was = S.call;
+  ringStop(); stopEvery(S.callClock); S.callClock = null;
+  S.callTimers.forEach(cancelLater); S.callTimers = [];
+  try{ window.speechSynthesis && speechSynthesis.cancel(); }catch(e){}
+  S.call = 'none'; callEl.hidden = true; callEl.classList.remove('ringing');
+  const msg = was === 'ringing' ? `Fake call ${how || 'declined'}` : 'Fake call ended';
+  log(msg); if(S.recording) noteAdd(msg);
+  if(S.steps.call === 'active') step('call','done');
+  renderStatus();
+}
+$('#acceptBtn').addEventListener('click', accept);
+$('#declineBtn').addEventListener('click', () => endCall('declined'));
+$('#endBtn').addEventListener('click', () => endCall());
+
+/* audio */
+let actx = null, ringIv = null;
+function ringStart(){
+  if(!cfg.voiceOn) return;
+  try{
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    if(actx.state === 'suspended') actx.resume();
+    const burst = () => {
+      [0, 0.28].forEach(off => {
+        const o = actx.createOscillator(), g = actx.createGain(), t0 = actx.currentTime + off;
+        o.type = 'sine'; o.frequency.value = off ? 660 : 880;
+        g.gain.setValueAtTime(0.0001, t0);
+        g.gain.exponentialRampToValueAtTime(0.12, t0 + 0.03);
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.24);
+        o.connect(g); g.connect(actx.destination); o.start(t0); o.stop(t0 + 0.26);
+      });
+    };
+    burst(); ringIv = setInterval(burst, 1700);
+  }catch(e){}
+}
+function ringStop(){ if(ringIv){ clearInterval(ringIv); ringIv = null; } }
+function speak(text){
+  if(!cfg.voiceOn || !('speechSynthesis' in window)) return;
+  try{ const u = new SpeechSynthesisUtterance(text); u.rate = 1.02; u.pitch = 1.05; speechSynthesis.speak(u); }catch(e){}
+}
+
+/* incident note */
+function startNote(kind){
+  if(!cfg.noteOn){ step('note','skipped'); renderNote(); return; }
+  if(!S.recording){
+    S.recording = true; S.note = [];
+    S.noteId = 'Incident WG ' + Math.floor(1000 + Math.random() * 9000);
+    noteAdd('Incident note opened');
+    noteAdd(`Location ${locStr()}`);
+  }
+  noteAdd(`${LABEL[kind]} phrase recognized`);
+  step('note','active');
+}
+function noteAdd(text){ S.note.push({t:timeStr(), text}); renderNote(); }
+function renderNote(){
+  const b = $('#noteBadge');
+  if(!cfg.noteOn){ b.className = 'badge'; b.textContent = 'Off'; }
+  else if(S.recording){ b.className = 'badge alert rec'; b.textContent = 'Recording'; }
+  else if(S.note.length){ b.className = 'badge ok'; b.textContent = 'Closed'; }
+  else { b.className = 'badge'; b.textContent = 'Ready'; }
+  $('#noteId').textContent = S.note.length ? S.noteId : (cfg.noteOn ? 'Opens automatically when a code phrase is heard.' : 'Turned off in settings.');
+  $('#copyNoteBtn').hidden = !S.note.length;
+  $('#noteList').innerHTML = S.note.map(n => `<li><time>${esc(n.t)}</time><span>${esc(n.text)}</span></li>`).join('');
+  const nl = $('#noteList'); nl.scrollTop = nl.scrollHeight;
+  renderStatus();
+}
+$('#copyNoteBtn').addEventListener('click', () => {
+  const text = S.noteId + '\n' + S.note.map(n => `${n.t}  ${n.text}`).join('\n');
+  try{
+    navigator.clipboard.writeText(text).then(() => toast('Note copied')).catch(() => toast('Copying is not available in this view.'));
+  }catch(e){ toast('Copying is not available in this view.'); }
+});
+
+/* emergency message */
+function alertText(){ return `WhisperGuard alert: ${cfg.userName} may need help. Last known location ${locStr()} at ${shortTime()}. Please call or check on ${cfg.userName} now.`; }
+function startMessage(){
+  if(!cfg.msgOn){ step('msg','skipped'); renderMsg(); return; }
+  if(S.msg === 'queued' || S.msg === 'sent') return;
+  S.msg = 'queued'; S.left = cfg.cancelWindow; S.sent = [];
+  step('msg','active');
+  log(`Emergency message queued, sending in ${S.left} seconds`, 'warn');
+  noteAdd(`Emergency message queued with a ${S.left} second cancel window`);
+  renderMsg();
+  S.msgIv = every(() => {
+    S.left--;
+    if(S.left <= 0){ stopEvery(S.msgIv); S.msgIv = null; sendMessage(); }
+    else { const b = $('#msgBadge'); b.textContent = `Sending in ${S.left}s`; renderStatus(); }
+  }, 1000);
+}
+function sendMessage(){
+  S.msg = 'sent';
+  const to = contactsList();
+  S.sent.push({kind:'alert', text:alertText(), time:shortTime(), to});
+  log(`Emergency message delivered to ${to.length} contact${to.length === 1 ? '' : 's'} (simulated)`, 'alert');
+  noteAdd(`Emergency message sent to ${to.join(', ') || 'no contacts'}`);
+  step('msg','done'); renderMsg();
+  S.locIv = every(() => {
+    drift();
+    S.sent.push({kind:'loc', text:`Location update: ${locStr()} at ${shortTime()}`, time:shortTime(), to});
+    noteAdd(`Location update ${locStr()}`); log('Location update shared (simulated)');
+    renderMsg();
+  }, 20000);
+}
+function cancelMessage(reason){
+  if(S.msg !== 'queued') return;
+  stopEvery(S.msgIv); S.msgIv = null; S.msg = 'cancelled';
+  step('msg','cancelled');
+  log(`Emergency message cancelled by ${reason}`, 'ok');
+  noteAdd(`Emergency message cancelled by ${reason}`);
+  renderMsg();
+}
+function renderMsg(){
+  const b = $('#msgBadge'), body = $('#msgBody'), to = contactsList();
+  const toLine = esc(to.join(', ') || 'No contacts set');
+  if(!cfg.msgOn && S.msg === 'none'){ b.className = 'badge'; b.textContent = 'Off'; body.innerHTML = '<p class="empty-msg">Turned off in settings. A full alert will still open the incident note and fake call.</p>'; }
+  else if(S.msg === 'none'){ b.className = 'badge'; b.textContent = 'Ready'; body.innerHTML = `<p class="empty-msg">Only the full alert phrase sends this. Recipients: ${toLine}.</p>`; }
+  else if(S.msg === 'queued'){
+    b.className = 'badge warn'; b.textContent = `Sending in ${S.left}s`;
+    body.innerHTML = `<div class="countdown"><div class="bar"><i style="animation:shrink ${cfg.cancelWindow}s linear forwards"></i></div>
+      <div class="cd-row"><span>Say the all clear phrase to stop it.</span><button class="btn small" id="cancelMsgBtn">Cancel message</button></div></div>
+      <div class="sms draft"><div class="to"><span>To: ${toLine}</span><span>Draft</span></div>${esc(alertText())}</div>`;
+  }
+  else if(S.msg === 'cancelled'){ b.className = 'badge ok'; b.textContent = 'Cancelled'; body.innerHTML = '<p class="empty-msg">Cancelled during the cancel window. Nobody was contacted.</p>'; }
+  else { b.className = 'badge alert'; b.textContent = 'Sent'; body.innerHTML = ''; }
+  if(S.sent.length){
+    body.innerHTML += S.sent.map(m => `<div class="sms ${m.kind}"><div class="to"><span>To: ${esc(m.to.join(', ') || 'No contacts set')}</span><span>Delivered ${esc(m.time)} (simulated)</span></div>${esc(m.text)}</div>`).join('');
+  }
+  renderStatus();
+}
+$('#msgBody').addEventListener('click', e => { if(e.target.id === 'cancelMsgBtn') cancelMessage('the cancel button'); });
+
+/* all clear */
+function allClear(){
+  if(S.msg === 'queued') cancelMessage('the all clear phrase');
+  else if(S.msg === 'sent'){
+    S.sent.push({kind:'clear', text:`WhisperGuard update: ${cfg.userName} says all clear at ${shortTime()}. No further action needed.`, time:shortTime(), to:contactsList()});
+    log('All clear follow up sent to contacts (simulated)', 'ok');
+    if(S.recording) noteAdd('All clear follow up sent to contacts');
+  }
+  stopEvery(S.locIv); S.locIv = null;
+  if(S.callTimer){ cancelLater(S.callTimer); S.callTimer = null; log('Pending fake call cancelled'); if(S.steps.call === 'active') step('call','cancelled'); }
+  if(S.call === 'ringing') endCall('dismissed');
+  if(S.recording){ noteAdd('All clear phrase recognized, incident note closed'); S.recording = false; step('note','done'); }
+  setMode('clear'); renderMsg(); renderNote();
+}
+
+/* status + pipeline */
+const MODES = {
+  idle:{label:'Standing by', title:'Listening for code phrases', desc:'The screen looks completely normal.'},
+  escape:{label:'Escape call', title:'Getting you out of the moment', desc:'A fake call is on its way and the incident note is open.'},
+  alert:{label:'Full alert', title:'Help is being lined up quietly', desc:'Fake call, incident note and emergency message are all running.'},
+  clear:{label:'All clear', title:'Stood down', desc:'Everything has stopped. Say a code phrase again to start a new incident.'}
+};
+function setMode(m){
+  if(S.mode !== m) log(`Mode changed to ${MODES[m].label}`, m === 'alert' ? 'alert' : m === 'escape' ? 'warn' : 'ok');
+  S.mode = m;
+  const el = $('#state'); el.className = 'state ' + m; el.textContent = MODES[m].label;
+  $('#stateTitle').textContent = MODES[m].title; $('#stateDesc').textContent = MODES[m].desc;
+  renderStatus();
+}
+function renderStatus(){
+  const callTxt = S.call === 'ringing' ? 'Ringing' : S.call === 'active' ? 'On the call' : S.callTimer ? 'Ringing soon' : (S.steps && S.steps.call === 'done') ? 'Finished' : 'Not scheduled';
+  $('#mCall').textContent = callTxt;
+  $('#mNote').textContent = !cfg.noteOn ? 'Off' : S.recording ? `Recording, ${S.note.length} entries` : S.note.length ? 'Closed' : 'Ready';
+  $('#mMsg').textContent = !cfg.msgOn ? 'Off' : S.msg === 'queued' ? `Sending in ${S.left}s` : S.msg === 'sent' ? 'Sent' : S.msg === 'cancelled' ? 'Cancelled' : 'Ready';
+}
+const STEPS = [
+  ['hear','Hear','Natural speech, no button'],
+  ['match','Match','Code phrase recognized'],
+  ['disguise','Disguise','Ordinary reply on screen'],
+  ['call','Fake call','A reason to walk away'],
+  ['note','Incident note','Timestamped record'],
+  ['msg','Emergency message','Trusted contacts told']
+];
+const ST_LABEL = {idle:'', active:'Running', done:'Done', skipped:'Not used', cancelled:'Cancelled', flash:'Listening'};
+function renderPipeline(){
+  $('#pipe').innerHTML = STEPS.map(([k,t,d], i) => {
+    const st = S.steps[k] || 'idle';
+    return `<li class="step ${st}"><span class="num">${i+1}</span><div><b>${t}</b><small>${d}</small>${ST_LABEL[st] ? `<span class="st">${ST_LABEL[st]}</span>` : ''}</div></li>`;
+  }).join('');
+}
+function step(k, v){ S.steps[k] = v; renderPipeline(); }
+function flashHear(){
+  if(S.steps.hear !== 'idle') return;
+  step('hear','flash');
+  later(() => { if(S.steps.hear === 'flash') step('hear','idle'); }, 900);
+}
+
+/* phrases */
+function renderPhrases(){
+  $('#phrases').innerHTML = ['escape','alert','clear'].map(k => {
+    const what = k === 'escape' ? 'fake call and note' : k === 'alert' ? 'call, note and message' : 'stands everything down';
+    return `<div class="phrase" id="ph-${k}">
+      <div class="ph-top"><span class="ph-name">${LABEL[k]}<small>${what}</small></span><button class="btn small" data-say="${k}">Say it</button></div>
+      <div class="ph-text">“${esc(cfg[k])}”</div>
+      <div class="meter"><div class="track"><i></i></div><span class="pct">No match</span></div>
+    </div>`;
+  }).join('');
+}
+$('#phrases').addEventListener('click', e => { const b = e.target.closest('[data-say]'); if(b) typeAndSend(sayFor(b.dataset.say)); });
+function renderMatch(text, m){
+  const h = $('#heard'); h.classList.remove('empty'); h.textContent = `“${text}”`;
+  m.res.forEach(r => {
+    const row = $('#ph-' + r.key); if(!row) return;
+    row.querySelector('i').style.width = (r.ratio * 100) + '%';
+    row.classList.toggle('hit', r.matched);
+    row.querySelector('.pct').textContent = r.matched ? 'Matched' : r.hit ? `${r.hit} of ${r.total} words` : 'No match';
+  });
+}
+
+/* log */
+function log(text, kind){
+  const li = document.createElement('li'); if(kind) li.className = kind;
+  li.innerHTML = `<time>${esc(timeStr())}</time><span>${esc(text)}</span>`;
+  const ul = $('#log'); ul.prepend(li);
+  while(ul.children.length > 80) ul.lastChild.remove();
+}
+
+/* mic */
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+let rec = null, listening = false;
+$('#micBtn').addEventListener('click', () => {
+  if(!SR){ toast('Voice input is not supported in this browser. Typing works exactly the same way.'); return; }
+  if(listening){ try{ rec.stop(); }catch(e){} return; }
+  try{
+    rec = new SR(); rec.lang = 'en-US'; rec.continuous = true; rec.interimResults = true;
+    rec.onresult = e => {
+      let interim = '';
+      for(let i = e.resultIndex; i < e.results.length; i++){
+        const r = e.results[i];
+        if(r.isFinal){ input.value = ''; handleUtterance(r[0].transcript); }
+        else interim += r[0].transcript;
+      }
+      if(interim) input.value = interim;
+    };
+    rec.onerror = e => {
+      const why = String(e.error || 'unknown').replace(/-/g,' ');
+      toast(e.error === 'not-allowed' || e.error === 'service-not-allowed'
+        ? 'Microphone access is blocked in this view. Typing works exactly the same way.'
+        : `Voice input stopped (${why}). Tap the mic to try again.`);
+    };
+    rec.onend = () => { listening = false; $('#micBtn').classList.remove('on'); log('Microphone stopped'); };
+    rec.start(); listening = true; $('#micBtn').classList.add('on'); log('Microphone listening');
+  }catch(e){ toast('Voice input could not start here. Typing works exactly the same way.'); }
+});
+
+/* toast */
+let toastT = null;
+function toast(t){ const el = $('#toast'); el.textContent = t; el.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove('show'), 3200); }
+
+/* scene narration */
+function scene(t){ $('#scene').hidden = !t; $('#sceneText').textContent = t || ''; }
+
+/* demo */
+let demoOn = false;
+async function runDemo(){
+  resetAll();
+  demoOn = true; const btn = $('#demoBtn'); btn.disabled = true; btn.textContent = 'Demo playing';
+  if(document.body.classList.contains('onlooker')) toggleOnlooker();
+  ringStart(); ringStop(); // unlocks audio on this click
+  scene(`${cfg.userName} is walking home from the train and chatting with Nimbus like she always does.`);
+  await wait(1500);
+  await typeAndSend("Hey, what's the weather like tonight?");
+  await wait(2200);
+  await typeAndSend('Cool. Play something relaxing for the walk.');
+  await wait(2200);
+  scene('She notices someone has been following her for two blocks. She keeps her voice casual.');
+  await wait(2800);
+  await typeAndSend(sayFor('alert'));
+  scene('The screen shows an ordinary reply that starts with “Got it”. Behind the scenes a full alert begins and the cancel window opens.');
+  await waitFor(() => S.call === 'ringing', 20000);
+  scene(`${cfg.callerName} is “calling”. Answering gives her a believable reason to stay on the line and walk away.`);
+  await wait(2400);
+  accept();
+  await waitFor(() => S.msg !== 'queued', 70000);
+  scene(S.msg === 'sent' ? 'The cancel window closed, so her trusted contacts now have her location. The incident note keeps a timestamped record.' : 'The incident note keeps a timestamped record of everything.');
+  await wait(9000);
+  endCall();
+  scene('She reaches a busy cafe and feels safe again.');
+  await wait(2200);
+  await typeAndSend(sayFor('clear'));
+  await wait(1500);
+  scene('The all clear phrase stands everything down and tells her contacts she is okay. Your turn: try the phrases yourself.');
+  demoOn = false; btn.disabled = false; btn.textContent = 'Play demo again';
+}
+$('#demoBtn').addEventListener('click', runDemo);
+
+/* onlooker */
+function toggleOnlooker(){
+  const on = document.body.classList.toggle('onlooker');
+  const b = $('#onlookerBtn'); b.setAttribute('aria-pressed', on); b.textContent = on ? 'Show behind the scenes' : 'Onlooker view';
+}
+$('#onlookerBtn').addEventListener('click', toggleOnlooker);
+
+/* reset */
+function resetAll(){
+  T.forEach(clearTimeout); T.clear(); I.forEach(clearInterval); I.clear();
+  ringStop(); try{ window.speechSynthesis && speechSynthesis.cancel(); }catch(e){}
+  if(listening && rec){ try{ rec.stop(); }catch(e){} }
+  S = freshState(); loc = {lat:37.7793, lng:122.4193};
+  callEl.hidden = true; callEl.classList.remove('ringing');
+  chat.innerHTML = ''; input.value = '';
+  bubble('bot', `Hi ${cfg.userName}. What can I help with?`);
+  $('#log').innerHTML = '';
+  const h = $('#heard'); h.classList.add('empty'); h.textContent = 'Nothing heard yet';
+  renderPhrases(); renderPipeline(); setMode('idle'); renderNote(); renderMsg();
+  scene('');
+  demoOn = false; const btn = $('#demoBtn'); btn.disabled = false; btn.textContent = 'Play demo';
+  log('WhisperGuard ready. Listening for code phrases');
+}
+$('#resetBtn').addEventListener('click', resetAll);
+
+/* settings */
+const F = {sName:'userName', sCaller:'callerName', sEscape:'escape', sAlert:'alert', sClear:'clear', sContacts:'contacts', sDelay:'callDelay', sWindow:'cancelWindow', sNote:'noteOn', sMsg:'msgOn', sCallAlert:'callOnAlert', sVoice:'voiceOn'};
+Object.entries(F).forEach(([id, key]) => {
+  const el = document.getElementById(id);
+  if(el.type === 'checkbox') el.checked = !!cfg[key]; else el.value = cfg[key];
+  el.addEventListener('change', () => {
+    if(el.type === 'checkbox') cfg[key] = el.checked;
+    else if(el.type === 'number'){
+      const min = +el.min, max = +el.max; let v = Math.round(+el.value || DEFAULTS[key]);
+      v = Math.max(min, Math.min(max, v)); el.value = v; cfg[key] = v;
+    } else {
+      const v = el.value.trim(); cfg[key] = v || DEFAULTS[key]; el.value = cfg[key];
+    }
+    saveCfg();
+    if(['escape','alert','clear'].includes(key)) renderPhrases();
+    if(S.msg === 'none') renderMsg();
+    renderNote();
+    toast('Settings saved');
+  });
+});
+
+/* clock */
+function tickClock(){ $('#clock').textContent = new Date().toLocaleTimeString([], {hour:'numeric', minute:'2-digit'}).replace(/\s?[AP]M$/i,''); }
+tickClock(); setInterval(tickClock, 15000);
+
+renderChips();
+resetAll();
+})();
+</script>
+</body>
+</html>
